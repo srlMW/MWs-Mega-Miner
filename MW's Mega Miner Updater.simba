@@ -1,4 +1,4 @@
-program EnchantOMatic;
+program Updater;
 
 
 
@@ -18,16 +18,13 @@ const
 procedure AutoUpdateMe();
 var
   newFile: integer;
-  newScript, newFilePath, newPaint, newPaintPath: string;
+  newScript, newFilePath: string;
   online_Version: extended;
 begin
   writeLn('Obtaining Latest Script Version.');
   online_Version := strToFloat(getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/VERSION.txt'));
   writeLn('Local Version ' + toStr(Local_Version) + ', Online Version: ' + toStr(online_Version));
   writeLn('Downloading the latest version from GitHub.');
-  newPaint := getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/Paint.png');
-  newPaintPath := scriptPath+ 'Paint' + '.png';
-  newFile := rewriteFile(newPaintPath, true);
   newScript := getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/MW%27s%20Mega%20Miner%20v1.simba');
   newFilePath := scriptPath+ 'MWs Mega Miner v' + toStr(online_Version) +'.simba';
   newFile := rewriteFile(newFilePath, true);
