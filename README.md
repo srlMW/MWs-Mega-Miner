@@ -1,2 +1,2 @@
 #MWs Mega Miner
-Powermines the ore you select for blazing xp rates
+Powermines ore for you with blazing xp rates
