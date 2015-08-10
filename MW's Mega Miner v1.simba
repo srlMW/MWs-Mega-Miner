@@ -834,6 +834,7 @@ begin
   if (not playerForm.isScriptReady) then
     exit;
   declarePlayers();
+  autoUpdateMe();
   setupSRL();
   Hop := False;
   if players[currentPlayer].booleans[9] then
