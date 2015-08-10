@@ -11,6 +11,37 @@ var
   paintBMP := loadBitmap (appPath + '\Scripts\MWs Mega Miner v1\Paint.png');
   Hop: boolean;
 
+procedure autoUpdateMe();
+var
+  newFile: integer;
+  newScript, newFilePath: string;
+  online_Version: extended;
+begin
+  sDebug('Checking for updates');
+  online_Version := strToFloat(getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/VERSION.txt'));
+  sDebug('Local Version ' + toStr(Local_Version) + ', Online Version: ' + toStr(online_Version)+'.');
+
+  if online_Version > Local_Version then
+  begin
+    writeLn('Downloading the latest script version from GitHub');
+    newScript := getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/MW%27s%20Mega%20Miner%20v1.simba');
+    newFilePath := scriptPath+ 'MWs Mega Miner v' + toStr(online_Version) +'.simba';
+    newFile := rewriteFile(newFilePath, true);
+
+    if not writeFileString(newFile, newScript) then
+    begin
+      writeLn('Could not write to ' + newFilePath);
+      terminatescript();
+    end;
+
+    closeFile(newFile);
+    writeLn('Latest script downloaded to ' + newFilePath);
+    writeLn('Please use the new one to run the latest version!');
+    terminateScript();
+  end else
+    sDebug('Local version is already up to date!');
+end;
+
 procedure initPlayerForm();
 begin
   with playerForm do
