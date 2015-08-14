@@ -727,8 +727,8 @@ begin
   print('Searching for rock to mine', TDebug.SUB);
   if Self.Colour.gatherIn(TPA, mainScreen.getBounds()) then
   begin
-    ATPA := TPA.cluster(5, 5);
-    ATPA.filterBetween(0, 5);
+    ATPA := TPA.cluster(3, 3);
+    ATPA.filterBetween(0, 3);
     smartImage.debugTPA(TPA);
     smartImage.debugATPA(ATPA);
     ATPA.sortFromMidPoint(mainscreen.playerPoint);
