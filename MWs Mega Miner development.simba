@@ -3,23 +3,23 @@ program MWsMegaMinerv1;
 {$i srl-6/srl.simba}
 {$i srl-6/lib/misc/srlplayerform.simba}
 
-
 const
-Local_Version := 1;
+  Local_Version := 1;
 
-type TMSObject = record
-  Name: String;
-  Colour: TColorData;
-  OverText, ChooseOption: TStringArray;
-end;
+type
+  TMSObject = record
+    Name: string;
+    Colour: TColorData;
+    OverText, ChooseOption: TStringArray;
+  end;
 
 var
   scriptTimer, bankingTimer, antibanTimer, failsafeTimer: TTimeMarker;
   oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
   pathToMine2: TPointArray;
-  oreType: string;
+  oreType, statType: string;
   vCopper, vTin, vIron, lCopper, lTin, bvTin, fCopper, fTin, fIron, rCopper, rTin, rIron: TMSObject;
-  //paintBMP := loadBitmap (appPath + '\Scripts\MWs Mega Miner v1\Paint.png');
+  paintBMP := loadBitmap (appPath + '\Scripts\MWs Mega Miner v1\Paint.png');
 
 procedure autoUpdateMe();
 var
@@ -32,7 +32,7 @@ begin
   begin
     writeLn('Downloading the latest script version from GitHub');
     newScript := getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/MW%27s%20Mega%20Miner%20v1.simba');
-    newFilePath := scriptPath+ 'MWs Mega Miner v' + toStr(online_Version) +'.simba';
+    newFilePath := scriptPath + 'MWs Mega Miner v' + toStr(online_Version) + '.simba';
     newFile := rewriteFile(newFilePath, true);
     if not writeFileString(newFile, newScript) then
     begin
@@ -57,7 +57,7 @@ begin
     editBoxHints := ['5hrs: 18000000', '0 = Random', 'Minimum wait before mining next rock', 'Maxium wait before mining next rock'];
     comboBoxLabels := ['Location + Ore', 'Action Bar Slot'];
     comboBoxDefaults := ['Varrock Iron', '1'];
-    comboBoxItems[0] := [['Varrock Tin', 'Varrock Copper', 'Varrock Iron', 'Lumbridge Tin', 'Lumbridge Copper', 'Lumbridge Iron', 'Barbarian Village Tin', 'Falador Tin', 'Falador Copper', 'Falador Iron', 'Rimmington Tin', 'Rimmington Copper', 'Rimmington Iron'], ['1','2','3','4','5','6','7','8','9','0']];
+    comboBoxItems := [['Varrock Tin', 'Varrock Copper', 'Varrock Iron', 'Lumbridge Tin', 'Lumbridge Copper', 'Lumbridge Iron', 'Barbarian Village Tin', 'Falador Tin', 'Falador Copper', 'Falador Iron', 'Rimmington Tin', 'Rimmington Copper', 'Rimmington Iron'], ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']];
     comboBoxHints := ['What location + ore do you wish to mine?', 'Which slot do you have to drop the ore?'];
   end;
 end;
@@ -79,24 +79,11 @@ begin
       strings[1] := playerForm.players[i].settings[5];
       world := integers[1];
       oreType := strings[0];
-      case oreType of
-        'Varrock Tin': vTin.Find();
-        'Varrock Copper': vCopper.Find();
-        'Varrock Iron': vIron.Find();
-        'Lumbridge Tin': lTin.Find();
-        'Lumbridge Copper': lCopper.Find();
-        'Barbarian Village Tin': bvTin.Find();
-        'Falador Tin': fTin.Find();
-        'Falador Copper': fCopper.Find();
-        'Falador Iron': fIron.Find();
-        'Rimmington Tin': rTin.Find();
-        'Rimmington Copper': rCopper.Find();
-        'Rimmington Iron': rIron.Find();
-      end;
+      statType := strings[0];
     end;
 end;
 
-procedure TMSObject.Init(_Name: String; _Colour: TColorData; _OverText, _ChooseOption: TStringArray);
+procedure TMSObject.Init(_Name: string; _Colour: TColorData; _OverText, _ChooseOption: TStringArray);
 begin
   Self.Name := _Name;
   Self.Colour := _Colour;
@@ -106,22 +93,20 @@ end;
 
 procedure loadObjects();
 begin
-  vTin.Init('Varrock Tin', [10590378, 19, [2, [0.36, 0.35, 0.00]]], ['ine Tin'], ['Mine Tin']);
-  vCopper.Init('Varrock Copper', [3634119, 13, [2, [0.15, 0.74, 0.00]]], ['ine Copper'], ['Mine Copper']);
-  vIron.Init('Varrock Iron', [2110059, 7, [2, [0.09, 0.55, 0.00]]], ['ine Iron'], ['Mine Iron']);
-
-  lTin.Init('Lumbridge Tin', [12364729, 20, [2, [0.77, 0.37, 0.00]]], ['ine Tin'], ['Mine Tin']);
-  lCopper.Init('Lumbridge Copper', [8115441, 21, [2, [0.26, 0.85, 0.00]]], ['ine Copper'], ['Mine Copper']);
-
-  bvTin.Init('Barbarian Village Tin', [11711142, 15, [2, [3.34, 0.29, 0.00]]], ['ine Tin'], ['Mine Tin']);
-
-  fTin.Init('Falador Tin', [9079711, 21, [2, [0.06, 0.29, 0.00]]], ['ine Tin'], ['Mine Tin']);
-  fCopper.Init('Falador Copper', [3045090, 13, [2, [0.02, 1.88, 0.00]]], ['ine Copper'], ['Mine Copper']);
-  fIron.Init('Falador Iron', [2240596, 9, [2, [0.06, 0.17, 0.00]]], ['ine Iron'], ['Mine Iron']);
-
-  rTin.Init('Rimmington Tin', [10655914, 18, [2, [0.42, 0.34, 0.00]]], ['ine Tin ore'], ['Mine Tin ore']);
-  rCopper.Init('Rimmington Copper', [5739208, 12, [2, [0.26, 0.94, 0.00]]], ['ine Copper ore'], ['Mine Copper ore']);
-  rIron.Init('Rimmington Iron', [2174305, 11, [2, [0.13, 0.91, 0.00]]], ['ine Iron ore'], ['Mine Iron ore']);
+  case players[currentPlayer].strings[0] of
+    'Varrock Tin': vTin.Init('Varrock Tin', [10590378, 19, [2, [0.36, 0.35, 0.00]]], ['ine Tin'], ['Mine Tin']);
+    'Varrock Copper': vCopper.Init('Varrock Copper', [3634119, 13, [2, [0.15, 0.74, 0.00]]], ['ine Copper'], ['Mine Copper']);
+    'Varrock Iron': vIron.Init('Varrock Iron', [2110059, 7, [2, [0.09, 0.55, 0.00]]], ['ine Iron'], ['Mine Iron']);
+    'Lumbridge Tin': lTin.Init('Lumbridge Tin', [12364729, 20, [2, [0.77, 0.37, 0.00]]], ['ine Tin'], ['Mine Tin']);
+    'Lumbridge Copper': lCopper.Init('Lumbridge Copper', [8115441, 21, [2, [0.26, 0.85, 0.00]]], ['ine Copper'], ['Mine Copper']);
+    'Barbarian Village Tin': bvTin.Init('Barbarian Village Tin', [11711142, 15, [2, [3.34, 0.29, 0.00]]], ['ine Tin'], ['Mine Tin']);
+    'Falador Tin': fTin.Init('Falador Tin', [9079711, 21, [2, [0.06, 0.29, 0.00]]], ['ine Tin'], ['Mine Tin']);
+    'Falador Copper': fCopper.Init('Falador Copper', [3045090, 13, [2, [0.02, 1.88, 0.00]]], ['ine Copper'], ['Mine Copper']);
+    'Falador Iron': fIron.Init('Falador Iron', [2240596, 9, [2, [0.06, 0.17, 0.00]]], ['ine Iron'], ['Mine Iron']);
+    'Rimmington Tin': rTin.Init('Rimmington Tin', [10655914, 18, [2, [0.42, 0.34, 0.00]]], ['ine Tin ore'], ['Mine Tin ore']);
+    'Rimmington Copper': rCopper.Init('Rimmington Copper', [5739208, 12, [2, [0.26, 0.94, 0.00]]], ['ine Copper ore'], ['Mine Copper ore']);
+    'Rimmington Iron': rIron.Init('Rimmington Iron', [2174305, 11, [2, [0.13, 0.91, 0.00]]], ['ine Iron ore'], ['Mine Iron ore']);
+  end;
 end;
 
 const
@@ -287,7 +272,7 @@ begin
   profitHR := Round(profitMade * (3600.0 / (GetTimeRunning / 1000.0)));
   xpHR := Round(xpGained * (3600.0 / (GetTimeRunning / 1000.0)));
   smartImage.clear;
-  //smartImage.drawBitmap(paintBMP, Point(0, 330));
+  smartImage.drawBitmap(paintBMP, Point(0, 330));
   smartImage.drawText(toStr(TimeRunning(TIME_BARE)), point(458, 575), 'smallcharsns', true, clwhite);
   smartImage.drawText(toStr(TimeRunning(TIME_BARE)), point(458, 555), 'smallcharsns', true, clyellow);
   smartImage.drawText(toStr(oreMined), point(231, 575), 'smallcharsns', true, clWhite);
@@ -324,7 +309,8 @@ begin
     players[currentPlayer].login();
     wait(randomRange(10000, 20000));
   end
-  else exit;
+  else
+    exit;
 end;
 
 procedure waitTime();
@@ -636,7 +622,7 @@ begin
   paintDisplay();
   dropTimer.start;
   print('Dropping bag', TDebug.SUB);
-  if (not bagfull.colorExists(2432270 ,6)) then
+  if (not bagfull.colorExists(2432270, 6)) then
   begin
     mouse(bagfullP, MOUSE_MOVE, MOUSE_HUMAN);
     fastClick(MOUSE_LEFT);
@@ -651,7 +637,7 @@ begin
     tabBackpack.clickDTM(diamondDTM, MOUSE_RIGHT, 'rop Uncut diamond', randomRange(100, 500), true);
   if (not tabBackPack.isEmpty) then
     repeat
-      typesend(players[currentPlayer].strings[2],false);
+      typesend(players[currentPlayer].strings[2], false);
       wait(randomRange(50, 200));
     until tabBackPack.isEmpty or (dropTimer.getTime > 7500);
   if (dropTimer.getTime > 7500) and (not tabBackPack.isEmpty) then
@@ -674,36 +660,36 @@ begin
   print('Clicking on rock', TDebug.SUB);
   if didClick(true) then
   begin
-  print('Started mining ore', TDebug.SUB);
-  case random(100) of
-    0..3:
-      begin
-        case random(30) of
-          0..5: pickUpMouse();
+    print('Started mining ore', TDebug.SUB);
+    case random(100) of
+      0..3:
+        begin
+          case random(30) of
+            0..5: pickUpMouse();
+          end;
+          case random(30) of
+            0..10: sleepAndMoveMouse(100 + random(50));
+            11..20: sleepAndMoveMouse(300 + random(70));
+            21..27: sleepAndMoveMouse(600 + random(90));
+            28..30: sleepAndMoveMouse(1000 + random(110));
+          end;
         end;
-        case random(30) of
-          0..10: sleepAndMoveMouse(100 + random(50));
-          11..20: sleepAndMoveMouse(300 + random(70));
-          21..27: sleepAndMoveMouse(600 + random(90));
-          28..30: sleepAndMoveMouse(1000 + random(110));
+      4..7:
+        begin
+          case random(30) of
+            0..10: sleepAndMoveMouse(100 + random(50));
+            11..20: sleepAndMoveMouse(300 + random(70));
+            21..27: sleepAndMoveMouse(600 + random(90));
+            28..30: sleepAndMoveMouse(1000 + random(110));
+          end;
         end;
-      end;
-    4..7:
-      begin
-        case random(30) of
-          0..10: sleepAndMoveMouse(100 + random(50));
-          11..20: sleepAndMoveMouse(300 + random(70));
-          21..27: sleepAndMoveMouse(600 + random(90));
-          28..30: sleepAndMoveMouse(1000 + random(110));
-        end;
-      end;
-    8..12: pickUpMouse();
-  end;
-  wait(500 + random(100));
-  if lootScreen.isOpen then
-    lootScreen.close;
-  tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3]));
-  antiban();
+      8..12: pickUpMouse();
+    end;
+    wait(500 + random(100));
+    if lootScreen.isOpen then
+      lootScreen.close;
+    tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3]));
+    antiban();
   end;
 end;
 
@@ -740,38 +726,51 @@ begin
   failsafeTimer.start;
 end;
 
-
 procedure mainloop();
 begin
   failsafeTimer.start;
   minimap.toggleRun(true);
   while (tabBackpack.count() < 28) or (failsafeTimer.getTime < 300000) do
-    oreType;
-  stats_commit();
+    case oreType of
+      'Varrock Tin': vTin.Find();
+      'Varrock Copper': vCopper.Find();
+      'Varrock Iron': vIron.Find();
+      'Lumbridge Tin': lTin.Find();
+      'Lumbridge Copper': lCopper.Find();
+      'Barbarian Village Tin': bvTin.Find();
+      'Falador Tin': fTin.Find();
+      'Falador Copper': fCopper.Find();
+      'Falador Iron': fIron.Find();
+      'Rimmington Tin': rTin.Find();
+      'Rimmington Copper': rCopper.Find();
+      'Rimmington Iron': rIron.Find();
+    end;
   failsafeTimer.start;
   dropOres();
-  if players[currentPlayer].booleans[0] then
-    begin
-      stats_IncVariable('6', 28);
-      stats_IncVariable('68', 490);
-    end
-  else if players[currentPlayer].booleans[1] then
-    begin
-      stats_IncVariable('5', 28);
-      stats_IncVariable('68', 490);
-    end
-  else if players[currentPlayer].booleans[2] then
-    begin
-      stats_IncVariable('7', 28);
-      stats_IncVariable('68', 980);
-    end
+  case statType of
+    'Varrock Tin', 'Lumbridge Tin', 'Barbarian Village Tin', 'Falador Tin', 'Rimmington Tin':
+      begin
+        stats_IncVariable('6', 28);
+        stats_IncVariable('68', 490);
+      end
+    'Varrock Copper', 'Lumbridge Copper', 'Falador Copper', 'Rimmington Copper':
+      begin
+        stats_IncVariable('5', 28);
+        stats_IncVariable('68', 490);
+      end
+    'Varrock Iron', 'Falador Iron', 'Rimmington Iron':
+      begin
+        stats_IncVariable('7', 28);
+        stats_IncVariable('68', 980);
+      end
+  end;
+  stats_commit();
 end;
 
 begin
   addOnTerminate('freeTheDTMs');
   clearDebug();
   smartEnableDrawing := true;
-  disableIPScreenshots := true;
   initPlayerForm();
   runPlayerForm();
   if (not playerForm.isScriptReady) then
