@@ -302,6 +302,7 @@ end;
 
 procedure loggingIn();
 begin
+  world := 0;
   if (not isLoggedIn) then
   begin
     print('Logging in', TDebug.SUB);
