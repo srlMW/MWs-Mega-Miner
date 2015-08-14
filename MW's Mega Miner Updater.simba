@@ -25,7 +25,7 @@ begin
   online_Version := strToFloat(getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/VERSION.txt'));
   writeLn('Local Version ' + toStr(Local_Version) + ', Online Version: ' + toStr(online_Version));
   writeLn('Downloading the latest version from GitHub.');
-  newScript := getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/MW%27s%20Mega%20Miner%20v1.simba');
+  newScript := getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/MWs%20Mega%20Miner.simba');
   newFilePath := scriptPath+ 'MWs Mega Miner v' + toStr(online_Version) +'.simba';
   newFile := rewriteFile(newFilePath, true);
   if not writeFileString(newFile, newScript) then
