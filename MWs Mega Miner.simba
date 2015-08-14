@@ -31,7 +31,7 @@ begin
   if online_Version > Local_Version then
   begin
     writeLn('Downloading the latest script version from GitHub');
-    newScript := getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/MW%27s%20Mega%20Miner%20v1.simba');
+    newScript := getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/MWs%20Mega%20Miner.simba');
     newFilePath := scriptPath + 'MWs Mega Miner v' + toStr(online_Version) + '.simba';
     newFile := rewriteFile(newFilePath, true);
     if not writeFileString(newFile, newScript) then
