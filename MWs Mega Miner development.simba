@@ -617,6 +617,8 @@ begin
   backpack.setBounds(578, 322, 794, 542);
   bagfull.setBounds(257, 549, 325, 557);
   bagfullP := bagfull.getRandomPoint;
+  if (not tabBackPack.isFull) then
+    exit;
   inc(oresCollected);
   paintDisplay();
   dropTimer.start;
@@ -647,7 +649,6 @@ begin
       3: tabBackpack.dropItems(DROP_PATTERN_UP_DOWN);
     end;
   antiban();
-  failsafeTimer.start;
 end;
 
 procedure clickOre();
@@ -661,7 +662,7 @@ begin
   begin
     smartImage.clear;
     print('Started mining ore', TDebug.SUB);
-    case random(100) of
+    case random(200) of
       0..3:
         begin
           case random(30) of
@@ -690,7 +691,26 @@ begin
       lootScreen.close;
     tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3]));
     antiban();
+    case statType of
+    'Varrock Tin', 'Lumbridge Tin', 'Barbarian Village Tin', 'Falador Tin', 'Rimmington Tin':
+      begin
+        stats_IncVariable('6', 1);
+        stats_IncVariable('68', 18);
+      end
+    'Varrock Copper', 'Lumbridge Copper', 'Falador Copper', 'Rimmington Copper':
+      begin
+        stats_IncVariable('5', 1);
+        stats_IncVariable('68', 18);
+      end
+    'Varrock Iron', 'Falador Iron', 'Rimmington Iron':
+      begin
+        stats_IncVariable('7', 1);
+        stats_IncVariable('68', 35);
+      end
+      end;
+  stats_commit();
   end;
+  minimap.waitPlayerMoving();
 end;
 
 procedure TMSObject.Find();
@@ -701,16 +721,16 @@ var
   miningTimer: TTimeMarker;
 begin
   if tabBackPack.isfull then
-    dropOres();
+    exit;
   if lootScreen.isOpen then
     lootScreen.close;
-  miningTimer.start;
   print('Searching for rock to mine', TDebug.SUB);
   if Self.Colour.gatherIn(TPA, mainScreen.getBounds()) then
   begin
-    ATPA := SplitTPAEx(TPA, 10, 20);
-    ATPA.filterBetween(0, 15);
-    smartImage.debugTPA(TPA, false);
+    ATPA := TPA.cluster(5, 5);
+    ATPA.filterBetween(0, 5);
+    smartImage.debugTPA(TPA);
+    smartImage.debugATPA(ATPA);
     ATPA.sortFromMidPoint(mainscreen.playerPoint);
     for i := 0 to high(ATPA) do
     begin
@@ -719,41 +739,22 @@ begin
         10..100: mouse(ATPA[i].getBounds().getGaussPoint(), MOUSE_MOVE, MOUSE_HUMAN);
       end;
       if isMouseOverText(Self.OverText) then
+      begin
         clickOre();
+        exit;
+      end;
     end;
   end;
-  if lootScreen.isOpen then
-    lootScreen.close;
-  stats_commit();
-  failsafeTimer.start;
 end;
 
 procedure mainloop();
 begin
-  failsafeTimer.start;
   minimap.toggleRun(true);
-  while (tabBackpack.count() < 28) or (failsafeTimer.getTime < 300000) do
+  playerCheck();
+  if (tabBackpack.count() < 28) then
     oreType.Find();
-  failsafeTimer.start;
-  dropOres();
-  case statType of
-    'Varrock Tin', 'Lumbridge Tin', 'Barbarian Village Tin', 'Falador Tin', 'Rimmington Tin':
-      begin
-        stats_IncVariable('6', 28);
-        stats_IncVariable('68', 490);
-      end
-    'Varrock Copper', 'Lumbridge Copper', 'Falador Copper', 'Rimmington Copper':
-      begin
-        stats_IncVariable('5', 28);
-        stats_IncVariable('68', 490);
-      end
-    'Varrock Iron', 'Falador Iron', 'Rimmington Iron':
-      begin
-        stats_IncVariable('7', 28);
-        stats_IncVariable('68', 980);
-      end
-  end;
-  stats_commit();
+  if tabBackpack.isFull then
+    dropOres();
 end;
 
 begin
@@ -778,7 +779,6 @@ begin
   scriptTimer.start();
   antibanTimer.start();
   repeat
-    playerCheck();
     mainloop();
   until (scriptTimer.getTime() > players[currentPlayer].integers[0]);
   stats_commit();
