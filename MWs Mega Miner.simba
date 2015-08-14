@@ -3,13 +3,23 @@ program MWsMegaMinerv1;
 {$i srl-6/srl.simba}
 {$i srl-6/lib/misc/srlplayerform.simba}
 
+const
+  Local_Version := 1;
+
+type
+  TMSObject = record
+    Name: string;
+    Colour: TColorData;
+    OverText, ChooseOption: TStringArray;
+  end;
+
 var
   scriptTimer, bankingTimer, antibanTimer, failsafeTimer: TTimeMarker;
   oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
   pathToMine2: TPointArray;
-  returnPoint := Point (120, 322);
+  statType: string;
+  oreType: TMSObject;
   paintBMP := loadBitmap (appPath + '\Scripts\MWs Mega Miner v1\Paint.png');
-  Hop: boolean;
 
 procedure autoUpdateMe();
 var
@@ -17,14 +27,12 @@ var
   newScript, newFilePath, paintFilePath: string;
   online_Version: extended;
 begin
-  sDebug('Checking for updates');
   online_Version := strToFloat(getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/VERSION.txt'));
-  sDebug('Local Version ' + toStr(Local_Version) + ', Online Version: ' + toStr(online_Version)+'.');
   if online_Version > Local_Version then
   begin
     writeLn('Downloading the latest script version from GitHub');
     newScript := getPage('http://static.frement.net/proxy.php?u=https://raw.githubusercontent.com/srlMW/MWs-Mega-Miner/master/MW%27s%20Mega%20Miner%20v1.simba');
-    newFilePath := scriptPath+ 'MWs Mega Miner v' + toStr(online_Version) +'.simba';
+    newFilePath := scriptPath + 'MWs Mega Miner v' + toStr(online_Version) + '.simba';
     newFile := rewriteFile(newFilePath, true);
     if not writeFileString(newFile, newScript) then
     begin
@@ -35,8 +43,7 @@ begin
     writeLn('Latest script downloaded to ' + newFilePath);
     writeLn('Please use the new one to run the latest version!');
     terminateScript();
-  end else
-    sDebug('Local version is already up to date!');
+  end;
 end;
 
 procedure initPlayerForm();
@@ -45,12 +52,13 @@ begin
   begin
     name := 'MWs Mega Miner | v1';
     scriptHelpThread := '';
-    editBoxLabels := ['Run for (amount)', 'World'];
-    editBoxDefaults := ['18000000', '0'];
-    editBoxHints := ['5hrs: 18000000 ', 'What world do you want to use?'];
-    checkBoxLabels := ['Tin', 'Copper', 'Iron', 'Varrock West n East', 'Lumbridge Swamp East', 'Al Kharid', 'Barbarian Village', 'Falador Mine', 'Rimmington', 'Hop Worlds'];
-    checkBoxDefaults := ['False', 'False', 'alse', 'False', 'False', 'False', 'False', 'False', 'false', 'true'];
-    checkBoxHints := ['Mine Tin', 'Mine Copper', 'Mine Iron', 'Mining @ Varrock West & East', 'Mining @ Lumbridge Swamp East', 'Mining @ Al Kharid', 'Mining @ Barbarian Village', 'Mining @ Falador Mine', 'Mining @ Rimmington', 'If too many players are near you it will hop'];
+    editBoxLabels := ['Run for (amount)', 'World', 'Min Wait', 'Max Wait'];
+    editBoxDefaults := ['18000000', '0', '5000', '7500'];
+    editBoxHints := ['5hrs: 18000000', '0 = Random', 'Minimum wait before mining next rock', 'Maxium wait before mining next rock'];
+    comboBoxLabels := ['Location + Ore', 'Action Bar Slot'];
+    comboBoxDefaults := ['Varrock Iron', '1'];
+    comboBoxItems := [['Varrock Tin', 'Varrock Copper', 'Varrock Iron', 'Lumbridge Tin', 'Lumbridge Copper', 'Lumbridge Iron', 'Barbarian Village Tin', 'Falador Tin', 'Falador Copper', 'Falador Iron', 'Rimmington Tin', 'Rimmington Copper', 'Rimmington Iron'], ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']];
+    comboBoxHints := ['What location + ore do you wish to mine?', 'Which slot do you have to drop the ore?'];
   end;
 end;
 
@@ -65,16 +73,39 @@ begin
     begin
       integers[0] := strToInt(playerForm.players[i].settings[0]);
       integers[1] := strToInt(playerForm.players[i].settings[1]);
-      booleans[0] := strToBool(playerForm.players[i].settings[2]);
-      booleans[1] := strToBool(playerForm.players[i].settings[3]);
-      booleans[2] := strToBool(playerForm.players[i].settings[4]);
-      booleans[3] := strToBool(playerForm.players[i].settings[5]);
-      booleans[4] := strToBool(playerForm.players[i].settings[6]);
-      booleans[5] := strToBool(playerForm.players[i].settings[7]);
-      booleans[6] := strToBool(playerForm.players[i].settings[8]);
-      booleans[7] := strToBool(playerForm.players[i].settings[9]);
-      booleans[8] := strToBool(playerForm.players[i].settings[10]);
+      integers[2] := strToInt(playerForm.players[i].settings[2]);
+      integers[3] := strToInt(playerForm.players[i].settings[3]);
+      strings[0] := playerForm.players[i].settings[4];
+      strings[1] := playerForm.players[i].settings[5];
+      world := integers[1];
+      statType := strings[0];
     end;
+end;
+
+procedure TMSObject.Init(_Name: string; _Colour: TColorData; _OverText, _ChooseOption: TStringArray);
+begin
+  Self.Name := _Name;
+  Self.Colour := _Colour;
+  Self.OverText := _OverText;
+  Self.ChooseOption := _ChooseOption;
+end;
+
+procedure loadObjects();
+begin
+  case players[currentPlayer].strings[0] of
+    'Varrock Tin': oreType.Init('Varrock Tin', [10590378, 19, [2, [0.36, 0.35, 0.00]]], ['ine Tin'], ['Mine Tin']);
+    'Varrock Copper': oreType.Init('Varrock Copper', [3634119, 13, [2, [0.15, 0.74, 0.00]]], ['ine Copper'], ['Mine Copper']);
+    'Varrock Iron': oreType.Init('Varrock Iron', [2110059, 7, [2, [0.09, 0.55, 0.00]]], ['ine Iron'], ['Mine Iron']);
+    'Lumbridge Tin': oreType.Init('Lumbridge Tin', [12364729, 20, [2, [0.77, 0.37, 0.00]]], ['ine Tin'], ['Mine Tin']);
+    'Lumbridge Copper': oreType.Init('Lumbridge Copper', [8115441, 21, [2, [0.26, 0.85, 0.00]]], ['ine Copper'], ['Mine Copper']);
+    'Barbarian Village Tin': oreType.Init('Barbarian Village Tin', [11711142, 15, [2, [3.34, 0.29, 0.00]]], ['ine Tin'], ['Mine Tin']);
+    'Falador Tin': oreType.Init('Falador Tin', [9079711, 21, [2, [0.06, 0.29, 0.00]]], ['ine Tin'], ['Mine Tin']);
+    'Falador Copper': oreType.Init('Falador Copper', [3045090, 13, [2, [0.02, 1.88, 0.00]]], ['ine Copper'], ['Mine Copper']);
+    'Falador Iron': oreType.Init('Falador Iron', [2240596, 9, [2, [0.06, 0.17, 0.00]]], ['ine Iron'], ['Mine Iron']);
+    'Rimmington Tin': oreType.Init('Rimmington Tin', [10655914, 18, [2, [0.42, 0.34, 0.00]]], ['ine Tin ore'], ['Mine Tin ore']);
+    'Rimmington Copper': oreType.Init('Rimmington Copper', [5739208, 12, [2, [0.26, 0.94, 0.00]]], ['ine Copper ore'], ['Mine Copper ore']);
+    'Rimmington Iron': oreType.Init('Rimmington Iron', [2174305, 11, [2, [0.13, 0.91, 0.00]]], ['ine Iron ore'], ['Mine Iron ore']);
+  end;
 end;
 
 const
@@ -214,7 +245,6 @@ end;
 procedure initDTMs();
 begin
   print('Initiating DTMs', TDebug.SUB);
-  ironDTM := DTMFromString('mfgEAAHicrc5LC0BQEIbhc2yUlVtyKRayEiILoRQr//8PeU/NQp2Nha+emqmZaUKlVI4YHtwX0/sIECFBiUZUIkWBDTcunDiwYsaIHi0G6Scs2GXe7HXmTm0+0sL5SFt1pv6J/omdB+L3BkY=');
   diamondDTM := DTMFromString('mFQEAAHic42VgYJAGYl4o5gdiISCWAGJZIFZCwvJALIUkLwzE4lBxFSBWhWJlqJgkEAtCzQThE/v2AUkmJMyIhJmwYpAZpAJGMjAKAADg/wUi');
   sapphireDTM := DTMFromString('mKgEAAHic42NgYHAFYnMgtgBiSyC2BmI7IHYGYncg9oFiXyD2AmInqBoJIBYHYhkgVgBiZShWQcIgcUkgFgJiPiDmB2IR8clAkgkPZkSjIRhkDjmAkUyMCgC9oAYt');
   emeraldDTM := DTMFromString('mKgEAAHic42NgYMgH4kQoTgLiDCAuAuJSIC4H4jIgLoGqywbiVCBOBmIJKBYBYkEg5ofSYkAsBcTyQKyChJWhYsJdIBVMJGNJBvIAI5kYFQAABqYIWg==');
@@ -224,7 +254,6 @@ end;
 procedure freeTheDTMs();
 begin
   print('Freeing DTMs', TDebug.SUB);
-  freeDTM(ironDTM);
   freeDTM(sapphireDTM);
   freeDTM(emeraldDTM);
   freeDTM(rubyDTM);
@@ -257,10 +286,6 @@ procedure setup();
 begin
   print('Setting up session', TDebug.SUB);
   mainscreen.setZoom(true);
-  case random(10) of
-    0..5: minimap.setAngle(90 + random(20));
-    6..10: minimap.setAngle(90 + random(10));
-  end;
   mainscreen.setAngle(MS_ANGLE_HIGH);
   if (not tabBackPack.isOpen) then
     tabBackPack.open;
@@ -276,36 +301,15 @@ begin
 end;
 
 procedure loggingIn();
-var
-  slot: integer;
 begin
-  slot := players[currentPlayer].integers[0];
-  if isLoggedIn then
+  if (not isLoggedIn) then
+  begin
+    print('Logging in', TDebug.SUB);
+    players[currentPlayer].login();
+    wait(randomRange(10000, 20000));
+  end
+  else
     exit;
-  print('Logging in', TDebug.SUB);
-  if lobby.isOpen and (slot = 0) or (Hop = true) then
-  begin
-    lobbyWorlds.selectRandomWorld(players[currentPlayer].isMember);
-    players[currentPlayer].login();
-  end
-  if lobby.isOpen then
-  begin
-    lobbyWorlds.selectWorld(slot);
-    players[currentPlayer].login();
-  end
-  else if (not lobby.isOpen) and (slot = 0) or (Hop = true) then
-  begin
-    players[currentPlayer].loginToLobby();
-    lobbyWorlds.selectRandomWorld(players[currentPlayer].isMember);
-    players[currentPlayer].login();
-  end
-  else if (not lobby.isOpen) then
-  begin
-    players[currentPlayer].loginToLobby();
-    lobbyWorlds.selectWorld(slot);
-    players[currentPlayer].login();
-  end;
-  wait(randomRange(7500, 12000));
 end;
 
 procedure waitTime();
@@ -584,8 +588,10 @@ end;
 procedure playerCheck();
 var
   result: boolean;
+  world: integer;
 begin
   result := length(minimap.getDots(MM_DOT_PLAYER, intToBox(660, 69, 727, 117), 40)) > 0;
+  world := 0;
   if result then
   begin
     print('Hopping worlds because players are nearby', TDebug.SUB);
@@ -599,6 +605,7 @@ begin
       setup();
     end;
   end;
+  world := players[currentPlayer].integers[1];
 end;
 
 procedure dropOres();
@@ -610,11 +617,13 @@ begin
   backpack.setBounds(578, 322, 794, 542);
   bagfull.setBounds(257, 549, 325, 557);
   bagfullP := bagfull.getRandomPoint;
+  if (not tabBackPack.isFull) then
+    exit;
   inc(oresCollected);
   paintDisplay();
   dropTimer.start;
   print('Dropping bag', TDebug.SUB);
-  if (not bagfull.colorExists(2299911 ,4)) then
+  if (not bagfull.colorExists(2432270, 6)) then
   begin
     mouse(bagfullP, MOUSE_MOVE, MOUSE_HUMAN);
     fastClick(MOUSE_LEFT);
@@ -629,7 +638,7 @@ begin
     tabBackpack.clickDTM(diamondDTM, MOUSE_RIGHT, 'rop Uncut diamond', randomRange(100, 500), true);
   if (not tabBackPack.isEmpty) then
     repeat
-      typesend('1', false);
+      typesend(players[currentPlayer].strings[1], false);
       wait(randomRange(50, 200));
     until tabBackPack.isEmpty or (dropTimer.getTime > 7500);
   if (dropTimer.getTime > 7500) and (not tabBackPack.isEmpty) then
@@ -640,7 +649,6 @@ begin
       3: tabBackpack.dropItems(DROP_PATTERN_UP_DOWN);
     end;
   antiban();
-  failsafeTimer.start;
 end;
 
 procedure clickOre();
@@ -650,40 +658,62 @@ begin
   if lootScreen.isOpen then
     lootScreen.close;
   print('Clicking on rock', TDebug.SUB);
-  fastClick(MOUSE_LEFT);
-  smartImage.clear;
-  case random(30) of
-    0..3:
+  if didClick(true) then
+  begin
+    smartImage.clear;
+    print('Started mining ore', TDebug.SUB);
+    case random(200) of
+      0..3:
+        begin
+          case random(30) of
+            0..5: pickUpMouse();
+          end;
+          case random(30) of
+            0..10: sleepAndMoveMouse(100 + random(50));
+            11..20: sleepAndMoveMouse(300 + random(70));
+            21..27: sleepAndMoveMouse(600 + random(90));
+            28..30: sleepAndMoveMouse(1000 + random(110));
+          end;
+        end;
+      4..7:
+        begin
+          case random(30) of
+            0..10: sleepAndMoveMouse(100 + random(50));
+            11..20: sleepAndMoveMouse(300 + random(70));
+            21..27: sleepAndMoveMouse(600 + random(90));
+            28..30: sleepAndMoveMouse(1000 + random(110));
+          end;
+        end;
+      8..12: pickUpMouse();
+    end;
+    wait(500 + random(100));
+    if lootScreen.isOpen then
+      lootScreen.close;
+    tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3]));
+    antiban();
+    case statType of
+    'Varrock Tin', 'Lumbridge Tin', 'Barbarian Village Tin', 'Falador Tin', 'Rimmington Tin':
       begin
-        case random(30) of
-          0..5: pickUpMouse();
-        end;
-        case random(30) of
-          0..10: sleepAndMoveMouse(100 + random(50));
-          11..20: sleepAndMoveMouse(300 + random(70));
-          21..27: sleepAndMoveMouse(600 + random(90));
-          28..30: sleepAndMoveMouse(1000 + random(110));
-        end;
-      end;
-    4..7:
+        stats_IncVariable('6', 1);
+        stats_IncVariable('68', 18);
+      end
+    'Varrock Copper', 'Lumbridge Copper', 'Falador Copper', 'Rimmington Copper':
       begin
-        case random(30) of
-          0..10: sleepAndMoveMouse(100 + random(50));
-          11..20: sleepAndMoveMouse(300 + random(70));
-          21..27: sleepAndMoveMouse(600 + random(90));
-          28..30: sleepAndMoveMouse(1000 + random(110));
-        end;
+        stats_IncVariable('5', 1);
+        stats_IncVariable('68', 18);
+      end
+    'Varrock Iron', 'Falador Iron', 'Rimmington Iron':
+      begin
+        stats_IncVariable('7', 1);
+        stats_IncVariable('68', 35);
+      end
       end;
-    8..12: pickUpMouse();
+  stats_commit();
   end;
-  wait(500 + random(100));
-  if lootScreen.isOpen then
-    lootScreen.close;
-  tabBackpack.waitForShift(randomRange(5000, 7500));
-  antiban();
+  minimap.waitPlayerMoving();
 end;
 
-procedure mineRocks();
+procedure TMSObject.Find();
 var
   x, y, i: integer;
   TPA, pathToMine2: TPointArray;
@@ -691,135 +721,40 @@ var
   miningTimer: TTimeMarker;
 begin
   if tabBackPack.isfull then
-    dropOres();
+    exit;
   if lootScreen.isOpen then
     lootScreen.close;
-  miningTimer.start;
-  print('Finding rock to mine', TDebug.SUB);
-  if players[currentPlayer].booleans[3] then
+  print('Searching for rock to mine', TDebug.SUB);
+  if Self.Colour.gatherIn(TPA, mainScreen.getBounds()) then
   begin
-    if players[currentPlayer].booleans[0] then
-      findColorsSpiralTolerance(x, y, TPA, 12171950, mainScreen.getBounds(), 14, colorSetting(2, 3.53, 0.58))
-    else if players[currentPlayer].booleans[1] then
-      findColorsSpiralTolerance(x, y, TPA, 5278153, mainScreen.getBounds(), 11, colorSetting(2, 0.20, 0.86))
-    else if players[currentPlayer].booleans[2] then
-      findColorsSpiralTolerance(x, y, TPA, 2175857, mainScreen.getBounds(), 9, colorSetting(2, 0.07, 0.64))
-  end
-  else if players[currentPlayer].booleans[4] then
-  begin
-    if players[currentPlayer].booleans[0] then
-      findColorsSpiralTolerance(x, y, TPA, 12363968, mainScreen.getBounds(), 26, colorSetting(2, 0.42, 0.35))
-    else if players[currentPlayer].booleans[1] then
-      findColorsSpiralTolerance(x, y, TPA, 10478833, mainScreen.getBounds(), 16, colorSetting(2, 0.32, 1.46))
-  end
-  else if players[currentPlayer].booleans[5] then
-  begin
-    if players[currentPlayer].booleans[0] then
-      findColorsSpiralTolerance(x, y, TPA, 10200770, mainScreen.getBounds(), 12, colorSetting(2, 0.41, 1.37))
-    else if players[currentPlayer].booleans[1] then
-      findColorsSpiralTolerance(x, y, TPA, 7063537, mainScreen.getBounds(), 10, colorSetting(2, 0.41, 0.95))
-    else if players[currentPlayer].booleans[2] then
-      findColorsSpiralTolerance(x, y, TPA, 6973996, mainScreen.getBounds(), 11, colorSetting(2, 4.55, 0.21))
-  end
-  else if players[currentPlayer].booleans[6] then
-  begin
-    if players[currentPlayer].booleans[0] then
-      findColorsSpiralTolerance(x, y, TPA, 11514275, mainScreen.getBounds(), 18, colorSetting(2, 2.71, 0.46))
-  end
-  else if players[currentPlayer].booleans[7] then
-  begin
-    if players[currentPlayer].booleans[0] then
-      findColorsSpiralTolerance(x, y, TPA, 10462150, mainScreen.getBounds(), 22, colorSetting(2, 0.01, 0.97))
-    else if players[currentPlayer].booleans[1] then
-      findColorsSpiralTolerance(x, y, TPA, 5351403, mainScreen.getBounds(), 11, colorSetting(2, 0.27, 1.96))
-    else if players[currentPlayer].booleans[2] then
-      findColorsSpiralTolerance(x, y, TPA, 2833515, mainScreen.getBounds(), 7, colorSetting(2, 0.07, 0.12))
-  end
-  else if players[currentPlayer].booleans[8] then
-  begin
-    if players[currentPlayer].booleans[0] then
-      findColorsSpiralTolerance(x, y, TPA, 11579555, mainScreen.getBounds(), 18, colorSetting(2, 2.78, 0.44))
-    else if players[currentPlayer].booleans[1] then
-      findColorsSpiralTolerance(x, y, TPA, 6070472, mainScreen.getBounds(), 13, colorSetting(2, 0.37, 1.06))
-    else if players[currentPlayer].booleans[2] then
-      findColorsSpiralTolerance(x, y, TPA, 2372203, mainScreen.getBounds(), 11, colorSetting(2, 0.09, 1.02))
-  end
-  ATPA := SplitTPAEx(TPA, 5, 10);
-  ATPA.sortFromMidPoint(mainscreen.playerPoint);
-  smartImage.debugTPA(TPA, false);
-  for i := 0 to high(ATPA) do
-  begin
-    mouse(middleTPA(ATPA[i]), MOUSE_MOVE, MOUSE_HUMAN);
-    if players[currentPlayer].booleans[8] then
+    ATPA := TPA.cluster(3, 3);
+    ATPA.filterBetween(0, 3);
+    smartImage.debugTPA(TPA);
+    smartImage.debugATPA(ATPA);
+    ATPA.sortFromMidPoint(mainscreen.playerPoint);
+    for i := 0 to high(ATPA) do
     begin
-      if players[currentPlayer].booleans[0] then
+      case random(100) of
+        0..9: missMouse(ATPA[i].getBounds().getGaussPoint(), true);
+        10..100: mouse(ATPA[i].getBounds().getGaussPoint(), MOUSE_MOVE, MOUSE_HUMAN);
+      end;
+      if isMouseOverText(Self.OverText) then
       begin
-        if isMouseOverText(['ine Tin ore', 'Mine Tin ore'], (randomRange(0, 100))) then
-          clickOre();
-      end
-      else if players[currentPlayer].booleans[1] then
-      begin
-        if isMouseOverText(['ine Copper ore', 'Mine Copper ore'], (randomRange(0, 100))) then
-          clickOre();
-      end
-      else if players[currentPlayer].booleans[2] then
-      begin
-        if isMouseOverText(['ine Iron ore', 'Mine Iron ore'], (randomRange(0, 100))) then
-          clickOre();
-      end
-    end
-    else
-    begin
-      if players[currentPlayer].booleans[0] then
-      begin
-        if isMouseOverText(['ine Tin', 'Mine Tin'], (randomRange(0, 100))) then
-          clickOre();
-      end
-      else if players[currentPlayer].booleans[1] then
-      begin
-        if isMouseOverText(['ine Copper', 'Mine Copper'], (randomRange(0, 100))) then
-          clickOre();
-      end
-      else if players[currentPlayer].booleans[2] then
-      begin
-        if isMouseOverText(['ine Iron', 'Mine Iron'], (randomRange(0, 100))) then
-          clickOre();
-      end
-    end
+        clickOre();
+        exit;
+      end;
+    end;
   end;
-  if lootScreen.isOpen then
-    lootScreen.close;
-  stats_commit();
-  antiban();
-  failsafeTimer.start;
 end;
 
 procedure mainloop();
 begin
-  failsafeTimer.start;
   minimap.toggleRun(true);
-  while (tabBackpack.count() < 28) or (failsafeTimer.getTime < 300000) do
-  begin
-    mineRocks();
-  end;
-  stats_commit();
-  failsafeTimer.start;
-  dropOres();
-  if players[currentPlayer].booleans[0] then
-    begin
-      stats_IncVariable('6', 28);
-      stats_IncVariable('68', 490);
-    end
-  else if players[currentPlayer].booleans[1] then
-    begin
-      stats_IncVariable('5', 28);
-      stats_IncVariable('68', 490);
-    end
-  else if players[currentPlayer].booleans[2] then
-    begin
-      stats_IncVariable('7', 28);
-      stats_IncVariable('68', 980);
-    end
+  playerCheck();
+  if (tabBackpack.count() < 28) then
+    oreType.Find();
+  if tabBackpack.isFull then
+    dropOres();
 end;
 
 begin
@@ -833,9 +768,7 @@ begin
   declarePlayers();
   autoUpdateMe();
   setupSRL();
-  Hop := False;
-  if players[currentPlayer].booleans[9] then
-    Hop := True;
+  loadObjects();
   paintDisplay();
   initDTMs();
   stats_Setup('37');
@@ -846,8 +779,6 @@ begin
   scriptTimer.start();
   antibanTimer.start();
   repeat
-    if players[currentPlayer].booleans[9] then
-      playerCheck();
     mainloop();
   until (scriptTimer.getTime() > players[currentPlayer].integers[0]);
   stats_commit();
