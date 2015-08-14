@@ -637,7 +637,7 @@ begin
     tabBackpack.clickDTM(diamondDTM, MOUSE_RIGHT, 'rop Uncut diamond', randomRange(100, 500), true);
   if (not tabBackPack.isEmpty) then
     repeat
-      typesend(players[currentPlayer].strings[2], false);
+      typesend(players[currentPlayer].strings[1], false);
       wait(randomRange(50, 200));
     until tabBackPack.isEmpty or (dropTimer.getTime > 7500);
   if (dropTimer.getTime > 7500) and (not tabBackPack.isEmpty) then
