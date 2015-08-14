@@ -15,7 +15,7 @@ type
 
 var
   scriptTimer, bankingTimer, antibanTimer, failsafeTimer: TTimeMarker;
-  oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
+  world, oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
   pathToMine2: TPointArray;
   statType: string;
   oreType: TMSObject;
