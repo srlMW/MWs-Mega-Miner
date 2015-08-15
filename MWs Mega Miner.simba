@@ -1,10 +1,10 @@
-program MWsMegaMinerv1;
+program MWsMegaMiner;
 {$DEFINE SMART}
 {$i srl-6/srl.simba}
 {$i srl-6/lib/misc/srlplayerform.simba}
 
 const
-  Local_Version := 1;
+  Local_Version := 1.1;
 
 type
   TMSObject = record
