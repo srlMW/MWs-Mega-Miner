@@ -14,10 +14,11 @@ type
   end;
 
 var
-  scriptTimer, bankingTimer, antibanTimer, failsafeTimer: TTimeMarker;
+  resetTimer, scriptTimer, bankingTimer, antibanTimer, failsafeTimer: TTimeMarker;
   world, oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
   pathToMine2: TPointArray;
   statType: string;
+  q: boolean;
   oreType: TMSObject;
   paintBMP := loadBitmap (appPath + '\Scripts\MWs Mega Miner v1\Paint.png');
 
@@ -360,24 +361,68 @@ begin
     wait(randomRange(600, 700))
 end;
 
-procedure antiban;
+procedure chatboxScroll(maxScroll: integer; multiples: boolean);
+var
+  chatboxx: TBox;
+  chatboxxPoint: TPoint;
+  scrollUp, scrollDown, i, minTime, maxTime, minScroll: integer;
+  q: boolean;
 begin
-  print('Calculating chance  of antiban', TDebug.SUB);
+  minTime := 0;
+  maxTime := 5000;
+  minScroll := 0;
+  chatBox.__setup();
+  chatboxx := chatBox.getChatArea();
+  chatboxxPoint := chatboxx.getRandomPoint();
+  scrollUp := randomRange(minScroll, maxScroll);
+  scrollDown := (scrollUp + random(1, 2));
+  i := 0;
+  case random(50) of
+    0..40: mouse(chatboxxPoint, MOUSE_MOVE, MOUSE_HUMAN);
+    41..50:
+      begin
+        missMouse(chatboxxPoint);
+        wait(randomRange(0, 50));
+        mouse(chatboxxPoint, MOUSE_MOVE, MOUSE_HUMAN);
+      end;
+  end;
+  mouseScroll(chatboxxPoint, scrollUp, false);
+  wait(randomRange(minTime, maxTime));
+  if (multiples = true) then
+    case random(10) of
+      0..10:
+        begin
+           (q := true);
+          repeat
+            mouseScroll(chatboxxPoint, scrollUp, false);
+            wait(randomRange(minTime, maxTime));
+            inc(i);
+            case random(100) of
+              0..30:(q := false);
+            end;
+          until (q = false);
+          mouseScroll(chatboxxPoint, (scrollDown * (i + 1)), true);
+          wait(randomRange(0, 50));
+          print('Completed chatboxScroll()', TDebug.SUB);
+          exit;
+        end;
+    end;
+  mouseScroll(chatboxxPoint, scrollDown, true);
+  wait(randomRange(0, 50));
+  print('Completed chatboxScroll()', TDebug.SUB);
+end;
+
+procedure antiban();
+begin
   if (antibanTimer.getTime < 600000) then
   begin
     randomMouseSpeed(3, 35, 55);
-    case random(10000) of
+    case random(1000) of
       0..5: pickUpMouse();
       6..8: sleepAndMoveMouse(100 + random(50));
       9..10:
         begin
           gameTabs.openTab(TAB_FRIENDS_CHAT);
-          wait(randomRange(100, 500));
-          tabBackPack.open;
-        end;
-      11..12:
-        begin
-          hoverSkill(SKILL_MINING);
           wait(randomRange(100, 500));
           tabBackPack.open;
         end;
@@ -390,23 +435,18 @@ begin
           end;
           tabBackPack.open;
         end;
+      15..16: chatboxScroll(10, true);
     end;
   end
   else if (antibanTimer.getTime > 600000) and (antibanTimer.getTime < 1200000) then
   begin
     randomMouseSpeed(3, 30, 50);
-    case random(10000) of
+    case random(1000) of
       0..6: pickUpMouse();
       7..10: sleepAndMoveMouse(500 + random(100));
       11..13:
         begin
           gameTabs.openTab(TAB_FRIENDS_CHAT);
-          wait(randomRange(200, 600));
-          tabBackPack.open;
-        end;
-      14..16:
-        begin
-          hoverSkill(SKILL_MINING);
           wait(randomRange(200, 600));
           tabBackPack.open;
         end;
@@ -421,23 +461,18 @@ begin
         end;
       20..22: smallRandomMouse();
       23..25: mouseMovingObject();
+      26..27: chatboxScroll(10, true);
     end;
   end
   else if (antibanTimer.getTime > 1200000) and (antibanTimer.getTime < 1800000) then
   begin
     randomMouseSpeed(3, 25, 45);
-    case random(10000) of
+    case random(800) of
       0..7: pickUpMouse();
       8..11: sleepAndMoveMouse(1000 + random(200));
       12..14:
         begin
           gameTabs.openTab(TAB_FRIENDS_CHAT);
-          wait(randomRange(300, 700));
-          tabBackPack.open;
-        end;
-      15..17:
-        begin
-          hoverSkill(SKILL_MINING);
           wait(randomRange(300, 700));
           tabBackPack.open;
         end;
@@ -451,23 +486,18 @@ begin
       24..27: mouseMovingObject();
       28..31: dragRandomItem();
       32..35: randomRClickItem();
+      36..39: chatboxScroll(10, true);
     end;
   end
   else if (antibanTimer.getTime > 1800000) and (antibanTimer.getTime < 2400000) then
   begin
     randomMouseSpeed(3, 20, 40);
-    case random(10000) of
+    case random(600) of
       0..9: pickUpMouse();
       10..12: sleepAndMoveMouse(2000 + random(400));
       13..15:
         begin
           gameTabs.openTab(TAB_FRIENDS_CHAT);
-          wait(randomRange(400, 800));
-          tabBackPack.open;
-        end;
-      16..18:
-        begin
-          hoverSkill(SKILL_MINING);
           wait(randomRange(400, 800));
           tabBackPack.open;
         end;
@@ -485,24 +515,19 @@ begin
       32..37: dragRandomItem();
       38..41: randomRClickItem();
       47..51: randomGameTab(true);
-      52..56: randomCompass(10, 350, true);
+      52..56: randomCompass(240, 120, false);
+      57..61: chatboxScroll(10, true);
     end;
   end
   else if (antibanTimer.getTime > 2400000) then
   begin
     randomMouseSpeed(3, 15, 35);
-    case random(10000) of
+    case random(400) of
       0..10: pickUpMouse();
       11..13: sleepAndMoveMouse(4000 + random(800));
       14..16:
         begin
           gameTabs.openTab(TAB_FRIENDS_CHAT);
-          wait(randomRange(500, 900));
-          tabBackPack.open;
-        end;
-      17..19:
-        begin
-          hoverSkill(SKILL_MINING);
           wait(randomRange(500, 900));
           tabBackPack.open;
         end;
@@ -520,7 +545,7 @@ begin
       34..39: dragRandomItem();
       40..45: randomRClickItem();
       52..55: randomGameTab(true);
-      56..61: randomCompass(10, 30, true);
+      56..61: randomCompass(240, 120, false);
       62..63:
         begin
           antibanTimer.reset;
@@ -565,14 +590,12 @@ begin
               begin
                 freeTheDTMs();
                 smartReloadClient(randomRange(1800000, 2400000));
-                print((TimeRunning), TDebug.DEBUG);
                 antibanTimer.start();
               end;
             99..100:
               begin
                 freeTheDTMs();
                 smartReloadClient(randomRange(2400000, 3600000));
-                print((TimeRunning), TDebug.DEBUG);
                 antibanTimer.start();
               end;
           end;
@@ -582,6 +605,7 @@ begin
           findNormalRandoms();
           setup();
         end;
+      64..69: chatboxScroll(10, true);
     end;
   end;
 end;
@@ -728,8 +752,8 @@ begin
   print('Searching for rock to mine', TDebug.SUB);
   if Self.Colour.gatherIn(TPA, mainScreen.getBounds()) then
   begin
-    ATPA := TPA.cluster(3, 3);
-    ATPA.filterBetween(0, 3);
+    ATPA := TPA.cluster(5, 5);
+    ATPA.filterBetween(0, 5);
     smartImage.debugTPA(TPA);
     smartImage.debugATPA(ATPA);
     ATPA.sortFromMidPoint(mainscreen.playerPoint);
@@ -779,8 +803,33 @@ begin
   setup();
   scriptTimer.start();
   antibanTimer.start();
+  resetTimer.start();
   repeat
     mainloop();
+    if (resetTimer.getTime > (randomRange(1800000, 5400000))) then
+    begin
+      q := false;
+      case random(100) of
+        0..10:
+          begin
+            players[currentPlayer].exitToLobby();
+            mouseOffClient(OFF_CLIENT_RANDOM);
+            Wait(randomRange(60000, 300000));
+            q := true;
+          end;
+      end;
+        freeTheDTMs();
+        initDTMs();
+        resetTimer.start();
+        wait(randomRange(10000, 60000));
+        if (q = true) then
+        begin
+          if lobby.isOpen then
+          loggingIn();
+          findNormalRandoms();
+          setup();
+        end;
+    end;
   until (scriptTimer.getTime() > players[currentPlayer].integers[0]);
   stats_commit();
   players[currentPlayer].logout();
