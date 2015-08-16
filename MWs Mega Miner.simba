@@ -419,7 +419,12 @@ procedure antiban();
 begin
   if (antibanTimer.getTime < 600000) then
   begin
-    randomMouseSpeed(3, 35, 55);
+    case random(100) of
+      93..100: mouseSpeed := RandomRange(20, 40);
+      72..92: mouseSpeed := RandomRange(25, 45);
+      41..71: mouseSpeed := RandomRange(30, 50);
+      0..40: mouseSpeed := RandomRange(35, 55);
+    end;
     case random(1000) of
       0..5: pickUpMouse();
       6..8: sleepAndMoveMouse(100 + random(50));
@@ -434,7 +439,7 @@ begin
           gameTabs.openTab(TAB_FRIENDS);
           wait(randomRange(100, 500));
           case random(10) of
-            0..1: hoverOnlineFriend();
+            0..2: hoverOnlineFriend();
           end;
           tabBackPack.open;
         end;
@@ -443,7 +448,12 @@ begin
   end
   else if (antibanTimer.getTime > 600000) and (antibanTimer.getTime < 1200000) then
   begin
-    randomMouseSpeed(3, 30, 50);
+    case random(100) of
+      93..100: mouseSpeed := RandomRange(20, 40);
+      72..92: mouseSpeed := RandomRange(25, 45);
+      0..40: mouseSpeed := RandomRange(30, 50);
+      41..71: mouseSpeed := RandomRange(35, 55);
+    end;
     case random(900) of
       0..6: pickUpMouse();
       7..10: sleepAndMoveMouse(500 + random(100));
@@ -458,7 +468,7 @@ begin
           gameTabs.openTab(TAB_FRIENDS);
           wait(randomRange(200, 600));
           case random(10) of
-            0..1: hoverOnlineFriend();
+            0..2: hoverOnlineFriend();
           end;
           tabBackPack.open;
         end;
@@ -469,7 +479,12 @@ begin
   end
   else if (antibanTimer.getTime > 1200000) and (antibanTimer.getTime < 1800000) then
   begin
-    randomMouseSpeed(3, 25, 45);
+    case random(100) of
+      93..100: mouseSpeed := RandomRange(20, 40);
+      0..40: mouseSpeed := RandomRange(25, 45);
+      41..71: mouseSpeed := RandomRange(30, 50);
+      72..92: mouseSpeed := RandomRange(35, 55);
+    end;
     case random(800) of
       0..7: pickUpMouse();
       8..11: sleepAndMoveMouse(1000 + random(200));
@@ -482,7 +497,10 @@ begin
       18..20:
         begin
           gameTabs.openTab(TAB_FRIENDS);
-          wait(randomRange(300, 700));
+          wait(randomRange(200, 600));
+          case random(10) of
+            0..2: hoverOnlineFriend();
+          end;
           tabBackPack.open;
         end;
       21..23: smallRandomMouse();
@@ -494,7 +512,12 @@ begin
   end
   else if (antibanTimer.getTime > 1800000) and (antibanTimer.getTime < 2400000) then
   begin
-    randomMouseSpeed(3, 20, 40);
+    case random(100) of
+      0..40: mouseSpeed := RandomRange(20, 40);
+      41..71: mouseSpeed := RandomRange(25, 45);
+      72..92: mouseSpeed := RandomRange(30, 50);
+      93..100: mouseSpeed := RandomRange(35, 55);
+    end;
     case random(700) of
       0..9: pickUpMouse();
       10..12: sleepAndMoveMouse(2000 + random(400));
@@ -507,9 +530,9 @@ begin
       19..21:
         begin
           gameTabs.openTab(TAB_FRIENDS);
-          wait(randomRange(400, 800));
+          wait(randomRange(200, 600));
           case random(10) of
-            0..1: hoverOnlineFriend();
+            0..2: hoverOnlineFriend();
           end;
           tabBackPack.open;
         end;
@@ -537,9 +560,9 @@ begin
       20..22:
         begin
           gameTabs.openTab(TAB_FRIENDS);
-          wait(randomRange(500, 900));
+          wait(randomRange(200, 600));
           case random(10) of
-            0..1: hoverOnlineFriend();
+            0..2: hoverOnlineFriend();
           end;
           tabBackPack.open;
         end;
