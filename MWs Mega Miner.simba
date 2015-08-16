@@ -746,24 +746,24 @@ begin
       lootScreen.close;
     antiban();
     if tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3])) then
-    case statType of
-    'Varrock Tin', 'Lumbridge Tin', 'Barbarian Village Tin', 'Falador Tin', 'Rimmington Tin':
-      begin
-        stats_IncVariable('6', 1);
-        stats_IncVariable('68', 18);
-      end
-    'Varrock Copper', 'Lumbridge Copper', 'Falador Copper', 'Rimmington Copper':
-      begin
-        stats_IncVariable('5', 1);
-        stats_IncVariable('68', 18);
-      end
-    'Varrock Iron', 'Falador Iron', 'Rimmington Iron':
-      begin
-        stats_IncVariable('7', 1);
-        stats_IncVariable('68', 35);
-      end
+      case statType of
+        'Varrock Tin', 'Lumbridge Tin', 'Barbarian Village Tin', 'Falador Tin', 'Rimmington Tin':
+          begin
+            stats_IncVariable('6', 1);
+            stats_IncVariable('68', 18);
+          end
+        'Varrock Copper', 'Lumbridge Copper', 'Falador Copper', 'Rimmington Copper':
+          begin
+            stats_IncVariable('5', 1);
+            stats_IncVariable('68', 18);
+          end
+        'Varrock Iron', 'Falador Iron', 'Rimmington Iron':
+          begin
+            stats_IncVariable('7', 1);
+            stats_IncVariable('68', 35);
+          end
       end;
-  stats_commit();
+    stats_commit();
   end;
   if tabBackpack.count = count then
     inc(z);
@@ -793,9 +793,27 @@ begin
     ATPA.sortFromMidPoint(mainscreen.playerPoint);
     for i := 0 to high(ATPA) do
     begin
-      case random(100) of
-        0..9: missMouse(ATPA[i].getBounds().getGaussPoint(), true);
-        10..100: mouse(ATPA[i].getBounds().getGaussPoint(), MOUSE_MOVE, MOUSE_HUMAN);
+      case random(12) of
+        0..2:
+          case random(100) of
+            0..9: missMouse(ATPA[i].getBounds().getRandomPoint(), true);
+            10..100: mouse(ATPA[i].getBounds().getRandomPoint(), MOUSE_MOVE, MOUSE_HUMAN);
+          end;
+        3..5:
+          case random(100) of
+            0..9: missMouse(ATPA[i][random(length(ATPA[i]))], true);
+            10..100: mouse(ATPA[i][random(length(ATPA[i]))], MOUSE_MOVE, MOUSE_HUMAN);
+          end;
+        6..8:
+          case random(100) of
+            0..9: missMouse(ATPA[i][random(length(ATPA[i]))], true);
+            10..100: mouse(ATPA[i][random(length(ATPA[i]))], MOUSE_MOVE, MOUSE_HUMAN);
+          end;
+        9..11:
+          case random(100) of
+            0..9: missMouse(ATPA[i].getBounds().getGaussPoint(), true);
+            10..100: mouse(ATPA[i].getBounds().getGaussPoint(), MOUSE_MOVE, MOUSE_HUMAN);
+          end;
       end;
       if isMouseOverText(Self.OverText) then
       begin
@@ -854,18 +872,18 @@ begin
             q := true;
           end;
       end;
-        freeTheDTMs();
-        initDTMs();
-        resetTimer.start();
-        mouseOffClient(OFF_CLIENT_RANDOM);
-        wait(randomRange(10000, 60000));
-        if (q = true) then
-        begin
-          if lobby.isOpen then
+      freeTheDTMs();
+      initDTMs();
+      resetTimer.start();
+      mouseOffClient(OFF_CLIENT_RANDOM);
+      wait(randomRange(10000, 60000));
+      if (q = true) then
+      begin
+        if lobby.isOpen then
           loggingIn();
-          findNormalRandoms();
-          setup();
-        end;
+        findNormalRandoms();
+        setup();
+      end;
     end;
   until (scriptTimer.getTime() > players[currentPlayer].integers[0]);
   stats_commit();
