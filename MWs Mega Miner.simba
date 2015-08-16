@@ -641,7 +641,7 @@ var
   result: boolean;
   world: integer;
 begin
-  result := length(minimap.getDots(MM_DOT_PLAYER, intToBox(660, 69, 727, 117), 40)) > 2;
+  result := length(minimap.getDots(MM_DOT_PLAYER, intToBox(660, 69, 727, 117), 40)) > randomRange(2, 3);
   if result or (a = true) then
   begin
     hop := true;
@@ -767,7 +767,7 @@ begin
   end;
   if tabBackpack.count = count then
     inc(z);
-  if z > 3 then
+  if z > randomRange(3, 7) then
     playerCheck();
   minimap.waitPlayerMoving();
 end;
