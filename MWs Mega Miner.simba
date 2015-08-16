@@ -4,7 +4,7 @@ program MWsMegaMiner;
 {$i srl-6/lib/misc/srlplayerform.simba}
 
 const
-  Local_Version := 1.2;
+  Local_Version := 1.3;
 
 type
   TMSObject = record
@@ -20,7 +20,7 @@ var
   statType: string;
   q, a, hop: boolean;
   oreType: TMSObject;
-  paintBMP := loadBitmap (appPath + '\Scripts\Projects\Completed\MWs Mega Miner [P]\Paint.png');
+  paintBMP := loadBitmap (appPath + '\Scripts\MWs Mega Miner\Paint.png');
 
 procedure autoUpdateMe();
 var
@@ -444,7 +444,7 @@ begin
   else if (antibanTimer.getTime > 600000) and (antibanTimer.getTime < 1200000) then
   begin
     randomMouseSpeed(3, 30, 50);
-    case random(1000) of
+    case random(900) of
       0..6: pickUpMouse();
       7..10: sleepAndMoveMouse(500 + random(100));
       11..13:
@@ -495,7 +495,7 @@ begin
   else if (antibanTimer.getTime > 1800000) and (antibanTimer.getTime < 2400000) then
   begin
     randomMouseSpeed(3, 20, 40);
-    case random(600) of
+    case random(700) of
       0..9: pickUpMouse();
       10..12: sleepAndMoveMouse(2000 + random(400));
       13..15:
@@ -525,7 +525,7 @@ begin
   else if (antibanTimer.getTime > 2400000) then
   begin
     randomMouseSpeed(3, 15, 35);
-    case random(400) of
+    case random(600) of
       0..10: pickUpMouse();
       11..13: sleepAndMoveMouse(4000 + random(800));
       14..16:
@@ -551,7 +551,8 @@ begin
       56..61: randomCompass(240, 120, false);
       62..63:
         begin
-          antibanTimer.reset;
+          if (not antibanTimer.getTime > (1800000 + random(600000))) then
+            exit;
           case random(10) of
             0..5:
               begin
@@ -574,32 +575,31 @@ begin
             0..50:
               begin
                 freeTheDTMs();
-                smartReloadClient(randomRange(360000, 600000));
-                print((TimeRunning), TDebug.DEBUG);
+                smartReloadClient(randomRange(300000, 600000));
               end;
             51..70:
               begin
                 freeTheDTMs();
                 smartReloadClient(randomRange(600000, 1200000));
-                print((TimeRunning), TDebug.DEBUG);
+                antibanTimer.start;
               end;
             71..90:
               begin
                 freeTheDTMs();
                 smartReloadClient(randomRange(1200000, 1800000));
-                print((TimeRunning), TDebug.DEBUG);
+                antibanTimer.start;
               end;
             91..98:
               begin
                 freeTheDTMs();
                 smartReloadClient(randomRange(1800000, 2400000));
-                antibanTimer.start();
+                antibanTimer.start;
               end;
             99..100:
               begin
                 freeTheDTMs();
                 smartReloadClient(randomRange(2400000, 3600000));
-                antibanTimer.start();
+                antibanTimer.start;
               end;
           end;
           waitClientReady;
@@ -618,7 +618,7 @@ var
   result: boolean;
   world: integer;
 begin
-  result := length(minimap.getDots(MM_DOT_PLAYER, intToBox(660, 69, 727, 117), 40)) > 0;
+  result := length(minimap.getDots(MM_DOT_PLAYER, intToBox(660, 69, 727, 117), 40)) > 2;
   if result or (a = true) then
   begin
     hop := true;
@@ -721,8 +721,8 @@ begin
     wait(500 + random(100));
     if lootScreen.isOpen then
       lootScreen.close;
-    tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3]));
     antiban();
+    if tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3])) then
     case statType of
     'Varrock Tin', 'Lumbridge Tin', 'Barbarian Village Tin', 'Falador Tin', 'Rimmington Tin':
       begin
@@ -744,7 +744,7 @@ begin
   end;
   if tabBackpack.count = count then
     inc(z);
-  if z > 10 then
+  if z > 3 then
     playerCheck();
   minimap.waitPlayerMoving();
 end;
@@ -763,8 +763,8 @@ begin
   print('Searching for rock to mine', TDebug.SUB);
   if Self.Colour.gatherIn(TPA, mainScreen.getBounds()) then
   begin
-    ATPA := TPA.cluster(5, 5);
-    ATPA.filterBetween(0, 5);
+    ATPA := TPA.cluster(3, 3);
+    ATPA.filterBetween(0, 3);
     smartImage.debugTPA(TPA);
     smartImage.debugATPA(ATPA);
     ATPA.sortFromMidPoint(mainscreen.playerPoint);
@@ -795,7 +795,9 @@ end;
 
 begin
   addOnTerminate('freeTheDTMs');
+  addOnTerminate('paintDisplay');
   clearDebug();
+  autoUpdateMe();
   smartEnableDrawing := true;
   initPlayerForm();
   runPlayerForm();
@@ -817,7 +819,7 @@ begin
   resetTimer.start();
   repeat
     mainloop();
-    if (resetTimer.getTime > (randomRange(1800000, 5400000))) then
+    if (resetTimer.getTime > (1800000 + random(600000))) then
     begin
       q := false;
       case random(100) of
@@ -832,6 +834,7 @@ begin
         freeTheDTMs();
         initDTMs();
         resetTimer.start();
+        mouseOffClient(OFF_CLIENT_RANDOM);
         wait(randomRange(10000, 60000));
         if (q = true) then
         begin
@@ -843,6 +846,7 @@ begin
     end;
   until (scriptTimer.getTime() > players[currentPlayer].integers[0]);
   stats_commit();
+  paintDisplay();
   players[currentPlayer].logout();
   freeTheDTMs();
 end.
