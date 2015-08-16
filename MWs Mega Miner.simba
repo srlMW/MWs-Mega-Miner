@@ -4,7 +4,7 @@ program MWsMegaMiner;
 {$i srl-6/lib/misc/srlplayerform.simba}
 
 const
-  Local_Version := 1.1;
+  Local_Version := 1.2;
 
 type
   TMSObject = record
@@ -18,9 +18,9 @@ var
   world, oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
   pathToMine2: TPointArray;
   statType: string;
-  q: boolean;
+  q, a, hop: boolean;
   oreType: TMSObject;
-  paintBMP := loadBitmap (appPath + '\Scripts\MWs Mega Miner v1\Paint.png');
+  paintBMP := loadBitmap (appPath + '\Scripts\Projects\Completed\MWs Mega Miner [P]\Paint.png');
 
 procedure autoUpdateMe();
 var
@@ -303,7 +303,10 @@ end;
 
 procedure loggingIn();
 begin
-  world := 0;
+  if (hop = false) then
+    world := players[currentPlayer].integers[1];
+  if (hop = true) then
+    world := 0;
   if (not isLoggedIn) then
   begin
     print('Logging in', TDebug.SUB);
@@ -616,9 +619,9 @@ var
   world: integer;
 begin
   result := length(minimap.getDots(MM_DOT_PLAYER, intToBox(660, 69, 727, 117), 40)) > 0;
-  world := 0;
-  if result then
+  if result or (a = true) then
   begin
+    hop := true;
     print('Hopping worlds because players are nearby', TDebug.SUB);
     players[currentPlayer].exitToLobby();
     if lobby.isOpen then
@@ -630,7 +633,7 @@ begin
       setup();
     end;
   end;
-  world := players[currentPlayer].integers[1];
+  hop := false;
 end;
 
 procedure dropOres();
@@ -677,7 +680,10 @@ begin
 end;
 
 procedure clickOre();
+var
+  z, count: integer;
 begin
+  a := false;
   if TabBackPack.isFull then
     exit;
   if lootScreen.isOpen then
@@ -685,6 +691,7 @@ begin
   print('Clicking on rock', TDebug.SUB);
   if didClick(true) then
   begin
+    count := tabBackpack.count;
     smartImage.clear;
     print('Started mining ore', TDebug.SUB);
     case random(200) of
@@ -735,6 +742,10 @@ begin
       end;
   stats_commit();
   end;
+  if tabBackpack.count = count then
+    inc(z);
+  if z > 10 then
+    playerCheck();
   minimap.waitPlayerMoving();
 end;
 
