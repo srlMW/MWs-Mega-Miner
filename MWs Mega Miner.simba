@@ -4,7 +4,7 @@ program MWsMegaMiner;
 {$i srl-6/lib/misc/srlplayerform.simba}
 
 const
-  Local_Version := 1.4;
+  Local_Version := 1.5;
 
 type
   TMSObject = record
@@ -15,10 +15,11 @@ type
 
 var
   resetTimer, scriptTimer, bankingTimer, antibanTimer, failsafeTimer: TTimeMarker;
-  oreMined, xpGained, world, oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
-  pathToMine2: TPointArray;
+  oreMined, xpGained, world, oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM, i, x, y: integer;
+  pathToMine2, TPA: TPointArray;
+  ATPA: T2DPointArray;
   statType: string;
-  q, a, hop, secondTime: boolean;
+  q, a, hop, secondTime, clicked: boolean;
   oreType: TMSObject;
   paintBMP := loadBitmap (appPath + '\Scripts\Projects\Completed\MWs Mega Miner [P]\Paint.png');
 
@@ -700,6 +701,9 @@ begin
   bagfullP := bagfull.getRandomPoint;
   if (not tabBackPack.isFull) then
     exit;
+  if lootScreen.isOpen then
+    lootScreen.close;
+  paintDisplay();
   inc(oresCollected);
   paintDisplay();
   dropTimer.start;
@@ -732,133 +736,69 @@ begin
   antiban();
 end;
 
-procedure clickOre();
-var
-  z, count: integer;
-begin
-  a := false;
-  if TabBackPack.isFull then
-    exit;
-  if lootScreen.isOpen then
-    lootScreen.close;
-  print('Clicking on rock', TDebug.SUB);
-  if didClick(true) then
-  begin
-    count := tabBackpack.count;
-    //smartImage.clear;
-    print('Started mining ore', TDebug.SUB);
-    case random(200) of
-      0..3:
-        begin
-          case random(30) of
-            0..5: pickUpMouse();
-          end;
-          case random(30) of
-            0..10: sleepAndMoveMouse(100 + random(50));
-            11..20: sleepAndMoveMouse(300 + random(70));
-            21..27: sleepAndMoveMouse(600 + random(90));
-            28..30: sleepAndMoveMouse(1000 + random(110));
-          end;
-        end;
-      4..7:
-        begin
-          case random(30) of
-            0..10: sleepAndMoveMouse(100 + random(50));
-            11..20: sleepAndMoveMouse(300 + random(70));
-            21..27: sleepAndMoveMouse(600 + random(90));
-            28..30: sleepAndMoveMouse(1000 + random(110));
-          end;
-        end;
-      8..12: pickUpMouse();
-    end;
-    antiban();
-    tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3]))
-  end;
-  if tabBackpack.count = count then
-    inc(z);
-  if z > randomRange(3, 7) then
-    playerCheck();
-  minimap.waitPlayerMoving();
-end;
-
 procedure TMSObject.Find();
 var
-  x, y, i, count: integer;
-  TPA, pathToMine2: TPointArray;
-  ATPA: T2DPointArray;
+  count, z: integer;
+  pathToMine2: TPointArray;
   waitTimer: TTimeMarker;
-  clicked: boolean;
 begin
   if tabBackPack.isfull then
     exit;
-  if lootScreen.isOpen then
-    lootScreen.close;
   print('Searching for rock to mine', TDebug.SUB);
-  minimap.waitPlayerMoving();
   if Self.Colour.gatherIn(TPA, mainScreen.getBounds()) then
   begin
     ATPA := TPA.cluster(3, 3);
     ATPA.filterBetween(0, 3);
     ATPA.sortFromMidPoint(mainscreen.playerPoint);
-    if clicked = false then
-    begin
     for i := 0 to high(ATPA) do
+    begin
       case random(100) of
         0..9: missMouse(ATPA[i].getBounds().getRandomPoint(), true);
         10..100: mouse(ATPA[i].getBounds().getRandomPoint(), MOUSE_MOVE, MOUSE_HUMAN);
       end;
-    end
-    else
-    begin
-    for i := 1 to high(ATPA) do
-      case random(100) of
-        0..9: missMouse(ATPA[i].getBounds().getRandomPoint(), true);
-        10..100: mouse(ATPA[i].getBounds().getRandomPoint(), MOUSE_MOVE, MOUSE_HUMAN);
+      if isMouseOverText(Self.OverText) then
+      begin
+        print('Clicking on rock', TDebug.SUB);
+        if didClick(true) then
+        begin
+          print('Started mining ore', TDebug.SUB);
+          case random(100) of
+            0..3:
+              begin
+                case random(30) of
+                  0..5: pickUpMouse();
+                end;
+                case random(30) of
+                  0..10: sleepAndMoveMouse(100 + random(50));
+                  11..20: sleepAndMoveMouse(300 + random(70));
+                  21..27: sleepAndMoveMouse(600 + random(90));
+                  28..30: sleepAndMoveMouse(1000 + random(110));
+                end;
+              end;
+            4..7:
+              begin
+                case random(30) of
+                  0..10: sleepAndMoveMouse(100 + random(50));
+                  11..20: sleepAndMoveMouse(300 + random(70));
+                  21..27: sleepAndMoveMouse(600 + random(90));
+                  28..30: sleepAndMoveMouse(1000 + random(110));
+                end;
+              end;
+            8..12: pickUpMouse();
+          end;
+          antiban();
+          tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3]));
+          exit;
+        end;
       end;
     end;
-  if isMouseOverText(Self.OverText) then
-  begin
-    if clicked = true then
-    repeat
-      wait(1);
-    until (count <> tabBackpack.count) or (waitTimer.getTime > (randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3])));
-    print('Clicking on rock', TDebug.SUB);
-    if didClick(true) then
-    begin
-    clicked := true;
-    print('Started mining ore', TDebug.SUB);
-    case random(200) of
-      0..3:
-        begin
-          case random(30) of
-            0..5: pickUpMouse();
-          end;
-          case random(30) of
-            0..10: sleepAndMoveMouse(100 + random(50));
-            11..20: sleepAndMoveMouse(300 + random(70));
-            21..27: sleepAndMoveMouse(600 + random(90));
-            28..30: sleepAndMoveMouse(1000 + random(110));
-          end;
-        end;
-      4..7:
-        begin
-          case random(30) of
-            0..10: sleepAndMoveMouse(100 + random(50));
-            11..20: sleepAndMoveMouse(300 + random(70));
-            21..27: sleepAndMoveMouse(600 + random(90));
-            28..30: sleepAndMoveMouse(1000 + random(110));
-          end;
-        end;
-      8..12: pickUpMouse();
-  end;
-  antiban();
-  exit;
-  end;
   end
   else
-  clicked := false;
-  exit;
-end;
+  begin
+    playerCheck();
+    minimap.waitPlayerMoving;
+    exit;
+  end;
 end;
 
 procedure mainloop();
