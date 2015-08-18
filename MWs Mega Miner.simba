@@ -704,8 +704,6 @@ begin
   if lootScreen.isOpen then
     lootScreen.close;
   paintDisplay();
-  inc(oresCollected);
-  paintDisplay();
   dropTimer.start;
   print('Dropping bag', TDebug.SUB);
   if (not bagfull.colorExists(2432270, 6)) then
@@ -762,8 +760,8 @@ begin
         if didClick(true) then
         begin
           print('Started mining ore', TDebug.SUB);
-          case random(100) of
-            0..3:
+          case random(10) of
+            0..1:
               begin
                 case random(30) of
                   0..5: pickUpMouse();
@@ -775,30 +773,22 @@ begin
                   28..30: sleepAndMoveMouse(1000 + random(110));
                 end;
               end;
-            4..7:
-              begin
-                case random(30) of
-                  0..10: sleepAndMoveMouse(100 + random(50));
-                  11..20: sleepAndMoveMouse(300 + random(70));
-                  21..27: sleepAndMoveMouse(600 + random(90));
-                  28..30: sleepAndMoveMouse(1000 + random(110));
-                end;
-              end;
-            8..12: pickUpMouse();
           end;
           antiban();
-          tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3]));
+          if tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3])) then
+            inc(oresCollected);
+            print('Finished mining the rock', TDebug.SUB);
           exit;
-        end;
+        end
+        else
+        begin
+          playerCheck();
+          minimap.waitPlayerMoving;
+          exit;
+        end
       end;
     end;
   end
-  else
-  begin
-    playerCheck();
-    minimap.waitPlayerMoving;
-    exit;
-  end;
 end;
 
 procedure mainloop();
