@@ -396,6 +396,71 @@ begin
     wait(randomRange(600, 700))
 end;
 
+procedure randomScreenMouse();
+var
+  a, b, c, d: TBox;
+  p, q, o, u: TPoint;
+begin
+  a.setBounds(2, 3, 572, 384);
+  b.setBounds(97, 71, 488, 315);
+  c.setBounds(142, 114, 414, 268);
+  d.setBounds(223, 149, 351, 221);
+  q := a.getRandomPoint();
+  u := d.getRandomPoint();
+  o := c.getRandomPoint();
+  p := b.getRandomPoint();
+  case random(40) of
+    0..20:
+      begin
+        case random(50) of
+          0..40: mouse(u, MOUSE_MOVE, MOUSE_HUMAN);
+          41..50:
+            begin
+              missMouse(u);
+              wait(randomRange(0, 50));
+              mouse(u, MOUSE_MOVE, MOUSE_HUMAN);
+            end;
+        end;
+      end;
+    21..30:
+      begin
+        case random(50) of
+          0..40: mouse(o, MOUSE_MOVE, MOUSE_HUMAN);
+          41..50:
+            begin
+              missMouse(o);
+              wait(randomRange(0, 50));
+              mouse(o, MOUSE_MOVE, MOUSE_HUMAN);
+            end;
+        end;
+      end;
+    31..36:
+      begin
+        case random(50) of
+          0..40: mouse(q, MOUSE_MOVE, MOUSE_HUMAN);
+          41..50:
+            begin
+              missMouse(q);
+              wait(randomRange(0, 50));
+              mouse(q, MOUSE_MOVE, MOUSE_HUMAN);
+            end;
+        end;
+      end;
+    37..40:
+      begin
+        case random(50) of
+          0..40: mouse(p, MOUSE_MOVE, MOUSE_HUMAN);
+          41..50:
+            begin
+              missMouse(p);
+              wait(randomRange(0, 50));
+              mouse(p, MOUSE_MOVE, MOUSE_HUMAN);
+            end;
+        end;
+      end;
+  end;
+end;
+
 procedure chatboxScroll(maxScroll: integer; multiples: boolean);
 var
   chatboxx: TBox;
@@ -760,20 +825,14 @@ begin
         if didClick(true) then
         begin
           print('Started mining ore', TDebug.SUB);
-          case random(10) of
-            0..1:
-              begin
-                case random(30) of
+                case random(35) of
                   0..5: pickUpMouse();
+                  6..16: sleepAndMoveMouse(10 + random(50));
+                  17..23: sleepAndMoveMouse(30 + random(70));
+                  24..28: sleepAndMoveMouse(60 + random(90));
+                  29..32: sleepAndMoveMouse(100 + random(110));
+                  33..35: randomScreenMouse();
                 end;
-                case random(30) of
-                  0..10: sleepAndMoveMouse(100 + random(50));
-                  11..20: sleepAndMoveMouse(300 + random(70));
-                  21..27: sleepAndMoveMouse(600 + random(90));
-                  28..30: sleepAndMoveMouse(1000 + random(110));
-                end;
-              end;
-          end;
           antiban();
           if tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3])) then
             inc(oresCollected);
