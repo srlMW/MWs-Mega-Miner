@@ -15,12 +15,12 @@ type
 
 var
   resetTimer, scriptTimer, bankingTimer, antibanTimer, failsafeTimer: TTimeMarker;
-  world, oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
+  oreMined, xpGained, world, oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
   pathToMine2: TPointArray;
   statType: string;
-  q, a, hop: boolean;
+  q, a, hop, secondTime: boolean;
   oreType: TMSObject;
-  paintBMP := loadBitmap (appPath + '\Scripts\MWs Mega Miner\Paint.png');
+  paintBMP := loadBitmap (appPath + '\Scripts\Projects\Completed\MWs Mega Miner [P]\Paint.png');
 
 procedure autoUpdateMe();
 var
@@ -263,12 +263,12 @@ end;
 
 procedure paintDisplay();
 var
-  profitMade, oreMined, xpGained, oreHR, profitHR, xpHR: integer;
+  profitMade, oreHR, profitHR, xpHR: integer;
 begin
-  profitMade := oresCollected * 28 * 205;
-  oreMined := oresCollected * 28;
-  xpGained := oresCollected * 28 * 35;
-  oreHR := Round(oresCollected * 28 * (3600.0 / (GetTimeRunning / 1000.0)));
+  profitMade := oresCollected * 205;
+  oreMined := oresCollected;
+  xpGained := oresCollected * 35;
+  oreHR := Round(oresCollected * (3600.0 / (GetTimeRunning / 1000.0)));
   profitHR := Round(profitMade * (3600.0 / (GetTimeRunning / 1000.0)));
   xpHR := Round(xpGained * (3600.0 / (GetTimeRunning / 1000.0)));
   smartImage.clear;
@@ -317,6 +317,35 @@ begin
   end
   else
     exit;
+end;
+
+procedure statsStuff();
+begin
+  case statType of
+    'Varrock Tin', 'Lumbridge Tin', 'Barbarian Village Tin', 'Falador Tin', 'Rimmington Tin':
+      begin
+        stats_IncVariable('6', oreMined);
+        stats_IncVariable('68', xpGained);
+      end
+    'Varrock Copper', 'Lumbridge Copper', 'Falador Copper', 'Rimmington Copper':
+      begin
+        stats_IncVariable('5', oreMined);
+        stats_IncVariable('68', xpGained);
+      end
+    'Varrock Iron', 'Falador Iron', 'Rimmington Iron':
+      begin
+        stats_IncVariable('7', oreMined);
+        stats_IncVariable('68', xpGained);
+      end
+  end;
+  stats_commit();
+end;
+
+procedure termination();
+begin
+  freeTheDTMs();
+  paintDisplay();
+  statsStuff();
 end;
 
 procedure waitTime();
@@ -742,24 +771,6 @@ begin
         end;
       8..12: pickUpMouse();
     end;
-    case statType of
-        'Varrock Tin', 'Lumbridge Tin', 'Barbarian Village Tin', 'Falador Tin', 'Rimmington Tin':
-          begin
-            stats_IncVariable('6', 1);
-            stats_IncVariable('68', 18);
-          end
-        'Varrock Copper', 'Lumbridge Copper', 'Falador Copper', 'Rimmington Copper':
-          begin
-            stats_IncVariable('5', 1);
-            stats_IncVariable('68', 18);
-          end
-        'Varrock Iron', 'Falador Iron', 'Rimmington Iron':
-          begin
-            stats_IncVariable('7', 1);
-            stats_IncVariable('68', 35);
-          end
-      end;
-      stats_commit();
     antiban();
     tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3]))
   end;
@@ -772,34 +783,82 @@ end;
 
 procedure TMSObject.Find();
 var
-  x, y, i: integer;
+  x, y, i, count: integer;
   TPA, pathToMine2: TPointArray;
   ATPA: T2DPointArray;
-  miningTimer: TTimeMarker;
+  waitTimer: TTimeMarker;
+  clicked: boolean;
 begin
   if tabBackPack.isfull then
     exit;
   if lootScreen.isOpen then
     lootScreen.close;
   print('Searching for rock to mine', TDebug.SUB);
+  minimap.waitPlayerMoving();
   if Self.Colour.gatherIn(TPA, mainScreen.getBounds()) then
   begin
     ATPA := TPA.cluster(3, 3);
     ATPA.filterBetween(0, 3);
-    //smartImage.debugTPA(TPA);
-    //smartImage.debugATPA(ATPA);
     ATPA.sortFromMidPoint(mainscreen.playerPoint);
+    if clicked = false then
+    begin
     for i := 0 to high(ATPA) do
-          case random(100) of
-            0..9: missMouse(ATPA[i].getBounds().getRandomPoint(), true);
-            10..100: mouse(ATPA[i].getBounds().getRandomPoint(), MOUSE_MOVE, MOUSE_HUMAN);
-          end;
-      if isMouseOverText(Self.OverText) then
-      begin
-        clickOre();
-        exit;
+      case random(100) of
+        0..9: missMouse(ATPA[i].getBounds().getRandomPoint(), true);
+        10..100: mouse(ATPA[i].getBounds().getRandomPoint(), MOUSE_MOVE, MOUSE_HUMAN);
       end;
+    end
+    else
+    begin
+    for i := 1 to high(ATPA) do
+      case random(100) of
+        0..9: missMouse(ATPA[i].getBounds().getRandomPoint(), true);
+        10..100: mouse(ATPA[i].getBounds().getRandomPoint(), MOUSE_MOVE, MOUSE_HUMAN);
+      end;
+    end;
+  if isMouseOverText(Self.OverText) then
+  begin
+    if clicked = true then
+    repeat
+      wait(1);
+    until (count <> tabBackpack.count) or (waitTimer.getTime > (randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3])));
+    print('Clicking on rock', TDebug.SUB);
+    if didClick(true) then
+    begin
+    clicked := true;
+    print('Started mining ore', TDebug.SUB);
+    case random(200) of
+      0..3:
+        begin
+          case random(30) of
+            0..5: pickUpMouse();
+          end;
+          case random(30) of
+            0..10: sleepAndMoveMouse(100 + random(50));
+            11..20: sleepAndMoveMouse(300 + random(70));
+            21..27: sleepAndMoveMouse(600 + random(90));
+            28..30: sleepAndMoveMouse(1000 + random(110));
+          end;
+        end;
+      4..7:
+        begin
+          case random(30) of
+            0..10: sleepAndMoveMouse(100 + random(50));
+            11..20: sleepAndMoveMouse(300 + random(70));
+            21..27: sleepAndMoveMouse(600 + random(90));
+            28..30: sleepAndMoveMouse(1000 + random(110));
+          end;
+        end;
+      8..12: pickUpMouse();
   end;
+  antiban();
+  exit;
+  end;
+  end
+  else
+  clicked := false;
+  exit;
+end;
 end;
 
 procedure mainloop();
@@ -812,8 +871,7 @@ begin
 end;
 
 begin
-  addOnTerminate('freeTheDTMs');
-  addOnTerminate('paintDisplay');
+  addOnTerminate('termination');
   clearDebug();
   autoUpdateMe();
   smartEnableDrawing := true;
@@ -863,8 +921,6 @@ begin
       end;
     end;
   until (scriptTimer.getTime() > players[currentPlayer].integers[0]);
-  stats_commit();
-  paintDisplay();
   players[currentPlayer].logout();
-  freeTheDTMs();
+  termination();
 end.
