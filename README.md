@@ -1,2 +1,2 @@
-#MWs Mega Miner
-Uses advanced human-like mechanics to powermine your selected ore with extremely blazing xp rates
+#MWs Mega Miner (SRL6)
+  Incorporates a superior human-like gameplay system to powermine your selected ore with blazing experience rates.
