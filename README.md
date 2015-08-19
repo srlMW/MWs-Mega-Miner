@@ -1,7 +1,7 @@
 **MWs Mega Miner (SRL6)**
 Incorporates a superior human-like gameplay system to powermine your selected ore with blazing experience rates.
 ## Version 
-* Version 1.5
+**Version**  1.5
 
 ## Contact
 #### Developer/Company
