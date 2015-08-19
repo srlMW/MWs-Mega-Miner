@@ -23,6 +23,27 @@ var
   oreType: TMSObject;
   paintBMP := loadBitmap (appPath + '\Scripts\Projects\Completed\MWs Mega Miner [P]\Paint.png');
 
+procedure debugPaint();
+begin
+  clearDebug();
+  writeln('//////////////////////////////////////////////////////////////////////////////////////');
+  writeln('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\');
+  writeln('//////////////////////////////////////////////////////////////////////////////////////');
+  writeln('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\');
+  writeln('//////////////////////////////////////////////////////////////////////////////////////');
+  writeln('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\');
+  writeln('//////////////////////////////////////////////////////////////////////////////////////');
+  writeln('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\');
+  writeln('//////////////////////////////////////////////////////////////////////////////////////');
+  writeln('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\');
+  writeln('//////////////////////////////////////////////////////////////////////////////////////');
+  writeln('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\');
+  writeln('//////////////////////////////////////////////////////////////////////////////////////');
+  writeln('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\');
+  writeln('//////////////////////////////////////////////////////////////////////////////////////');
+  writeln('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\');
+end;
+
 procedure autoUpdateMe();
 var
   newFile: integer;
@@ -827,9 +848,9 @@ begin
   if (not tabBackPack.isEmpty) then
     repeat
       typesend(players[currentPlayer].strings[1], false);
-      wait(randomRange(50, 200));
-    until tabBackPack.isEmpty or (dropTimer.getTime > 10000);
-  if (dropTimer.getTime > 10000) and (not tabBackPack.isEmpty) then
+      wait(gaussRangeInt(50, 200));
+    until tabBackPack.isEmpty or (dropTimer.getTime > gaussRangeInt(15000, 20000));
+  if (not tabBackPack.isEmpty) then
     case random(4) of
       0: tabBackpack.dropItems(DROP_PATTERN_REGULAR);
       1: tabBackpack.dropItems(DROP_PATTERN_SNAKE);
@@ -916,7 +937,7 @@ end;
 
 begin
   addOnTerminate('termination');
-  clearDebug();
+  debugPaint();
   autoUpdateMe();
   smartEnableDrawing := true;
   smartShowConsole := false;
