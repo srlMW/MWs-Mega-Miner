@@ -3,11 +3,9 @@ Incorporates a superior human-like gameplay system to powermine your selected or
  
 **Version:**  1.5
 
-**Developer:** srlMW
-
 **Skype:** srl.MW
 
-**Villavu.com:** srlMW
+**Villavu.com:** https://villavu.com/forum/member.php?u=154805
 
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=username&url=https://github.com/username/sw-name&title=sw-name&language=&tags=github&category=software) 
 
