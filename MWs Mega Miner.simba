@@ -4,7 +4,7 @@ program MWsMegaMiner;
 {$i srl-6/lib/misc/srlplayerform.simba}
 
 const
-  Local_Version := 1.5;
+  Local_Version := 1.6;
 
 type
   TMSObject = record
