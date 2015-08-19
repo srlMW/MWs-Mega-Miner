@@ -15,7 +15,7 @@ type
 
 var
   resetTimer, scriptTimer, bankingTimer, antibanTimer, failsafeTimer: TTimeMarker;
-  oreMined, xpGained, world, oresCollected, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM, i, x, y: integer;
+  oreMined, xpGained, world, oresCollected, strangeRockDTM, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM, i, x, y: integer;
   pathToMine2, TPA: TPointArray;
   ATPA: T2DPointArray;
   statType: string;
@@ -251,6 +251,7 @@ begin
   sapphireDTM := DTMFromString('mKgEAAHic42NgYHAFYnMgtgBiSyC2BmI7IHYGYncg9oFiXyD2AmInqBoJIBYHYhkgVgBiZShWQcIgcUkgFgJiPiDmB2IR8clAkgkPZkSjIRhkDjmAkUyMCgC9oAYt');
   emeraldDTM := DTMFromString('mKgEAAHic42NgYMgH4kQoTgLiDCAuAuJSIC4H4jIgLoGqywbiVCBOBmIJKBYBYkEg5ofSYkAsBcTyQKyChJWhYsJdIBVMJGNJBvIAI5kYFQAABqYIWg==');
   rubyDTM := DTMFromString('mAAEAAHic42FgYJgJxP1A3A3FvUA8EYinAvEcIF4AxSD2FCCWAGJ+IBaCshWAWAUNSwKxIFRdhYQAkGRCw4w42ExgvaQARhIxMgAAqJUJHQ==');
+  strangeRockDTM := DTMFromString('m1gAAAHic42JgYJAFYhkgVgBidSDWAGIlIJYEYmEoFgdiAag6kHppIBYDYkEg5oeqEYPqKSsuAJJMBDFILTYgiYYZicQIAAA9FQP5');
 end;
 
 procedure freeTheDTMs();
@@ -260,6 +261,7 @@ begin
   freeDTM(emeraldDTM);
   freeDTM(rubyDTM);
   freeDTM(diamondDTM);
+  freeDTM(strangeRockDTM);
 end;
 
 procedure paintDisplay();
@@ -776,14 +778,34 @@ begin
     mouse(bagfullP, MOUSE_MOVE, MOUSE_HUMAN);
     fastClick(MOUSE_LEFT);
   end;
-  if backpack.dtmExists(sapphireDTM) then
-    tabBackpack.clickDTM(sapphireDTM, MOUSE_RIGHT, 'rop Uncut sapphire', randomRange(100, 500), true);
-  if backpack.dtmExists(emeraldDTM) then
-    tabBackpack.clickDTM(emeraldDTM, MOUSE_RIGHT, 'rop Uncut emerald', randomRange(100, 500), true);
-  if backpack.dtmExists(rubyDTM) then
+  while backpack.dtmExists(sapphireDTM) or backpack.dtmExists(emeraldDTM) or backpack.dtmExists(rubyDTM) or backpack.dtmExists(diamondDTM) do
+  case random(20) of
+    0..0:
+      begin
+        if backpack.dtmExists(sapphireDTM) then
+        tabBackpack.clickDTM(sapphireDTM, MOUSE_RIGHT, 'rop Uncut sapphire', randomRange(100, 500), true);
+      end;
+    0..0:
+    begin
+      if backpack.dtmExists(emeraldDTM) then
+      tabBackpack.clickDTM(emeraldDTM, MOUSE_RIGHT, 'rop Uncut emerald', randomRange(100, 500), true);
+    end;
+    0..0:
+    begin
+      if backpack.dtmExists(rubyDTM) then
     tabBackpack.clickDTM(rubyDTM, MOUSE_RIGHT, 'rop Uncut ruby', randomRange(100, 500), true);
-  if backpack.dtmExists(diamondDTM) then
+    end;
+    0..0:
+    begin
+      if backpack.dtmExists(diamondDTM) then
     tabBackpack.clickDTM(diamondDTM, MOUSE_RIGHT, 'rop Uncut diamond', randomRange(100, 500), true);
+     end;
+    0..0:
+    begin
+    if backpack.dtmExists(strangeRockDTM) then
+      begin
+      tabBackpack.clickDTM(diamondDTM, MOUSE_RIGHT, 'rop Uncut diamond', randomRange(100, 500), true);
+  end;
   if (not tabBackPack.isEmpty) then
     repeat
       typesend(players[currentPlayer].strings[1], false);
@@ -825,14 +847,19 @@ begin
         if didClick(true) then
         begin
           print('Started mining ore', TDebug.SUB);
-                case random(35) of
-                  0..5: pickUpMouse();
-                  6..16: sleepAndMoveMouse(10 + random(50));
-                  17..23: sleepAndMoveMouse(30 + random(70));
-                  24..28: sleepAndMoveMouse(60 + random(90));
-                  29..32: sleepAndMoveMouse(100 + random(110));
-                  33..35: randomScreenMouse();
-                end;
+          case random(100) of
+            0..10: pickUpMouse();
+            11..20: sleepAndMoveMouse(10 + random(50));
+            21..26: sleepAndMoveMouse(30 + random(70));
+            26..31: sleepAndMoveMouse(60 + random(90));
+            32..36: sleepAndMoveMouse(100 + random(110));
+            37..39: randomScreenMouse();
+            40:
+              begin
+                wait(randomRange(0, 50));
+                fastClick(MOUSE_LEFT);
+              end;
+          end;
           antiban();
           if tabBackpack.waitForShift(randomRange(players[currentPlayer].integers[2], players[currentPlayer].integers[3])) then
             inc(oresCollected);
