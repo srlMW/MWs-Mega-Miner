@@ -1,14 +1,11 @@
 **MWs Mega Miner (SRL6)**
 Incorporates a superior human-like gameplay system to powermine your selected ore with blazing experience rates.
-## Version 
-**Version**  1.5
+ 
+**Version:**  1.5
 
-## Contact
-#### Developer/Company
-* Homepage: 
-* e-mail: 
-* Twitter: [@twitterhandle](https://twitter.com/twitterhandle "twitterhandle on twitter")
-* other communication/social media
+**Developer:** srlMW
+* Skype: srl.MW
+* Villavu.com: srlMW
 
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=username&url=https://github.com/username/sw-name&title=sw-name&language=&tags=github&category=software) 
 
