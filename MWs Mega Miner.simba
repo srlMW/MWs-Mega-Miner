@@ -15,9 +15,7 @@ type
 
 var
   resetTimer, scriptTimer, bankingTimer, antibanTimer, failsafeTimer: TTimeMarker;
-  oreMined, xpGained, world, oresCollected, strangeRockDTM, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM, i, x, y: integer;
-  pathToMine2, TPA: TPointArray;
-  ATPA: T2DPointArray;
+  oreMined, xpGained, world, oresCollected, strangeRockDTM, ironDTM, diamondDTM, rubyDTM, emeraldDTM, sapphireDTM: integer;
   statType: string;
   q, a, hop, secondTime, clicked, isMember: boolean;
   oreType: TMSObject;
@@ -79,11 +77,11 @@ begin
     editBoxDefaults := ['18000000', '0', '5000', '7500'];
     editBoxHints := ['5hrs: 18000000', '0 = Random', 'Minimum wait before mining next rock', 'Maximum wait before mining next rock'];
     checkBoxLabels := ['Member'];
-    checkBoxDefaults := ['True'];
+    checkBoxDefaults := ['False'];
     checkBoxHints := ['Are you a member?'];
     comboBoxLabels := ['Location + Ore', 'Action Bar Slot'];
     comboBoxDefaults := ['Varrock Iron', '1'];
-    comboBoxItems := [['Varrock Tin', 'Varrock Copper', 'Varrock Iron', 'Lumbridge Tin', 'Lumbridge Copper', 'Lumbridge Iron', 'Barbarian Village Tin', 'Falador Tin', 'Falador Copper', 'Falador Iron', 'Rimmington Tin', 'Rimmington Copper', 'Rimmington Iron'], ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']];
+    comboBoxItems := [['Varrock Tin', 'Varrock Copper', 'Varrock Iron', 'Lumbridge Tin', 'Lumbridge Copper', 'Barbarian Village Tin', 'Falador Tin', 'Falador Copper', 'Falador Iron', 'Rimmington Tin', 'Rimmington Copper', 'Rimmington Iron'], ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']];
     comboBoxHints := ['What location + ore do you wish to mine?', 'Which slot do you have to drop the ore?'];
   end;
 end;
@@ -102,9 +100,10 @@ begin
       integers[1] := strToInt(playerForm.players[i].settings[1]);
       integers[2] := strToInt(playerForm.players[i].settings[2]);
       integers[3] := strToInt(playerForm.players[i].settings[3]);
-      strings[0] := playerForm.players[i].settings[4];
-      strings[1] := playerForm.players[i].settings[5];
-      booleans[0] := strToBool(playerForm.players[i].settings[6]);
+      booleans[0] := strToBool(playerForm.players[i].settings[4]);
+      strings[0] := playerForm.players[i].settings[5];
+      strings[1] := playerForm.players[i].settings[6];
+
       world := integers[1];
       statType := strings[0];
       isMember := booleans[0];
@@ -134,7 +133,7 @@ begin
     'Falador Iron': oreType.Init('Falador Iron', [2240596, 9, [2, [0.06, 0.17, 0.00]]], ['ine Iron'], ['Mine Iron']);
     'Rimmington Tin': oreType.Init('Rimmington Tin', [10655914, 18, [2, [0.42, 0.34, 0.00]]], ['ine Tin ore'], ['Mine Tin ore']);
     'Rimmington Copper': oreType.Init('Rimmington Copper', [5739208, 12, [2, [0.26, 0.94, 0.00]]], ['ine Copper ore'], ['Mine Copper ore']);
-    'Rimmington Iron': oreType.Init('Rimmington Iron', [2174305, 11, [2, [0.13, 0.91, 0.00]]], ['ine Iron ore'], ['Mine Iron ore']);
+    'Rimmington Iron': oreType.Init('Rimmington Iron', [2174046, 11, [2, [0.13, 1.01, 0.00]]], ['ine Iron ore'], ['Mine Iron ore']);
   end;
 end;
 
@@ -873,9 +872,9 @@ end;
 
 procedure TMSObject.Find();
 var
-  count, z: integer;
-  pathToMine2: TPointArray;
-  waitTimer: TTimeMarker;
+  i, x, y: integer;
+  TPA: TPointArray;
+  ATPA: T2DPointArray;
 begin
   if tabBackPack.isfull then
     exit;
@@ -934,6 +933,7 @@ begin
       end;
     end;
   end
+  else exit;
 end;
 
 procedure mainloop();
@@ -948,7 +948,7 @@ end;
 begin
   addOnTerminate('termination');
   debugPaint();
-  autoUpdateMe();
+  //autoUpdateMe();
   smartEnableDrawing := true;
   smartShowConsole := false;
   initPlayerForm();
@@ -956,7 +956,6 @@ begin
   if (not playerForm.isScriptReady) then
     exit;
   declarePlayers();
-  autoUpdateMe();
   setupSRL();
   loadObjects();
   paintDisplay();
